@@ -112,6 +112,7 @@ export default function CartPage() {
       const existingStr = localStorage.getItem("dc_session_orders");
       const existingParsed = existingStr ? JSON.parse(existingStr) : [];
       localStorage.setItem("dc_session_orders", JSON.stringify([...existingParsed, order.order_id]));
+      window.dispatchEvent(new Event("dc_orders_updated"));
     }
 
     // Immediately redirect to order status

@@ -23,19 +23,36 @@ export function OrdersDrawer() {
   const [orderIds, setOrderIds] = useState<string[]>([]);
 
   useEffect(() => {
-    // Read session orders from local storage
-    const stored = localStorage.getItem("dc_session_orders");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setOrderIds(parsed);
+    const loadOrders = () => {
+      const stored = localStorage.getItem("dc_session_orders");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setOrderIds(parsed);
+          } else {
+            setOrderIds([]); // Fix: Ensure it clears if array is empty
+          }
+        } catch (e) {
+          console.error("Failed to parse session orders", e);
+          setOrderIds([]);
         }
-      } catch (e) {
-        console.error("Failed to parse session orders", e);
+      } else {
+        setOrderIds([]); // Fix: Ensure it clears if storage is wiped
       }
-    }
-  }, [open]); // Refresh when opened
+    };
+
+    loadOrders(); // 1. Run immediately on load
+
+    // 2. Listen for real-time updates from the Cart and Store
+    window.addEventListener("storage", loadOrders); // Cross-tab sync
+    window.addEventListener("dc_orders_updated", loadOrders); // Same-tab sync
+
+    return () => {
+      window.removeEventListener("storage", loadOrders);
+      window.removeEventListener("dc_orders_updated", loadOrders);
+    };
+  }, []); // Fix: Empty dependency array means it stays synced forever
 
   const { data: orders, isLoading } = useSessionOrders(orderIds);
 

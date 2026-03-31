@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCallback, useState } from "react";
+import { useCartStore } from "@/store/cartStore";
 
 const STEPS = [
   { key: "received",  label: "Order Received",  icon: Package,   desc: "Your order is confirmed" },
@@ -25,6 +26,7 @@ export default function OrderStatusPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get("id") ?? "";
+  const tableId = useCartStore((s) => s.tableId);
   const { data: order, isLoading } = useOrder(orderId);
   const createRazorpayOrder = useCreateRazorpayOrder();
   const [isPaying, setIsPaying] = useState(false);
@@ -159,7 +161,7 @@ export default function OrderStatusPage() {
             className="w-full border-orange-200 text-orange-600 hover:bg-orange-50 h-12 text-base font-bold shadow-sm bg-white"
             onClick={() => {
               const slug = typeof window !== "undefined" ? localStorage.getItem("dc_restaurant_id") || "test-bistro" : "test-bistro";
-              const tableQuery = order.tableId ? `?table=${order.tableId}` : "";
+              const tableQuery = tableId ? `?table=${tableId}` : ""; 
               router.push(`/menu/${slug}${tableQuery}`);
             }}
           >

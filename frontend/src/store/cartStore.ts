@@ -66,6 +66,7 @@ export const useCartStore = create<CartState>()(
         if (tableId && state.tableId && state.tableId !== tableId) {
           if (typeof window !== "undefined") {
             localStorage.removeItem("dc_session_orders");
+            window.dispatchEvent(new Event("dc_orders_updated"));
           }
           set({
             restaurantId: restaurantId || state.restaurantId,
