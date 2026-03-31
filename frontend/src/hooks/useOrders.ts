@@ -27,7 +27,7 @@ export function useLiveOrders() {
     queryKey: queryKeys.orders.live(RID),
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<PaginatedResponse<Order>>>(
-        "/api/v1/staff/orders?limit=50&cursor="
+        "/api/v1/staff/orders?limit=50"
       );
       return data.data.items;
     },

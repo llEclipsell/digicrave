@@ -104,7 +104,8 @@ async def get_active_orders(
         if last_id:
             try:
                 query = query.where(Order.id > uuid.UUID(last_id))
-            except ValueError:
+            except (ValueError, Exception) as e:
+                print(f"[Warning] Failed to decode cursor: {e}")
                 pass
 
     # Total count
