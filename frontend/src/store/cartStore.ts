@@ -59,7 +59,25 @@ export const useCartStore = create<CartState>()(
       pricingValid: true,
 
       initSession(restaurantId, tableId) {
-        set({ restaurantId, tableId });
+        const state = get();
+
+        // If the table or restaurant has changed from what is currently active, wipe the cart
+        if (
+          (state.tableId !== null && state.tableId !== tableId) ||
+          (state.restaurantId !== "" && state.restaurantId !== restaurantId)
+        ) {
+          set({
+            restaurantId,
+            tableId,
+            items: [],
+            breakdown: EMPTY_BREAKDOWN,
+            pricingValid: true,
+            specialInstructions: "",
+          });
+        } else {
+          // Otherwise, just initialize them normally
+          set({ restaurantId, tableId });
+        }
       },
 
       addItem(menuItem) {

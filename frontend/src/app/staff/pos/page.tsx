@@ -68,7 +68,7 @@ function OrderPanel({
   onClearTable: () => void;
 }) {
   // All cart state comes from the POS store, scoped to tableLabel
-  const cart = usePOSStore((s) => s.tableOrders[tableLabel]?.cart ?? []);
+  const cart = usePOSStore((s) => s.tableOrders[tableLabel]?.cart) ?? [];
   const payMethod = usePOSStore((s) => s.tableOrders[tableLabel]?.payMethod ?? "cash");
   const addToCart = usePOSStore((s) => s.addToCart);
   const removeFromCart = usePOSStore((s) => s.removeFromCart);
@@ -257,7 +257,7 @@ export default function POSPage() {
   );
 
   // Get current cart from store (scoped to selectedTable)
-  const cartForTable = usePOSStore((s) => s.tableOrders[selectedTable]?.cart ?? []);
+  const cartForTable = usePOSStore((s) => s.tableOrders[selectedTable]?.cart) ?? [];
 
   async function handlePlaceOrder(payMethod: string) {
     if (!selectedTable || cartForTable.length === 0) return;
@@ -365,45 +365,45 @@ export default function POSPage() {
               <div className="grid grid-cols-3 gap-2 py-2">
                 {itemsLoading
                   ? Array.from({ length: 9 }).map((_, i) => (
-                      <Skeleton key={i} className="h-20 rounded-xl" />
-                    ))
+                    <Skeleton key={i} className="h-20 rounded-xl" />
+                  ))
                   : filtered.map((item) => {
-                      const qty =
-                        cartForTable.find((e) => e.item.id === item.id)
-                          ?.qty ?? 0;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            if (!selectedTable) {
-                              setView("tables");
-                              return;
-                            }
-                            addToCart(selectedTable, item);
-                          }}
-                          className={cn(
-                            "flex flex-col items-start rounded-xl border p-2.5 text-left transition-all active:scale-95",
-                            !selectedTable &&
-                              "opacity-60 cursor-not-allowed",
-                            qty > 0
-                              ? "border-orange-400 bg-orange-50 dark:bg-orange-950/30"
-                              : "hover:border-muted-foreground/40"
-                          )}
-                        >
-                          <p className="line-clamp-2 text-xs font-semibold leading-tight">
-                            {item.name}
-                          </p>
-                          <p className="mt-auto pt-1.5 text-xs font-bold text-orange-600">
-                            ₹{item.priceOffline}
-                          </p>
-                          {qty > 0 && (
-                            <Badge className="mt-1 h-4 px-1.5 text-[9px] bg-orange-500">
-                              {qty}
-                            </Badge>
-                          )}
-                        </button>
-                      );
-                    })}
+                    const qty =
+                      cartForTable.find((e) => e.item.id === item.id)
+                        ?.qty ?? 0;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          if (!selectedTable) {
+                            setView("tables");
+                            return;
+                          }
+                          addToCart(selectedTable, item);
+                        }}
+                        className={cn(
+                          "flex flex-col items-start rounded-xl border p-2.5 text-left transition-all active:scale-95",
+                          !selectedTable &&
+                          "opacity-60 cursor-not-allowed",
+                          qty > 0
+                            ? "border-orange-400 bg-orange-50 dark:bg-orange-950/30"
+                            : "hover:border-muted-foreground/40"
+                        )}
+                      >
+                        <p className="line-clamp-2 text-xs font-semibold leading-tight">
+                          {item.name}
+                        </p>
+                        <p className="mt-auto pt-1.5 text-xs font-bold text-orange-600">
+                          ₹{item.priceOffline}
+                        </p>
+                        {qty > 0 && (
+                          <Badge className="mt-1 h-4 px-1.5 text-[9px] bg-orange-500">
+                            {qty}
+                          </Badge>
+                        )}
+                      </button>
+                    );
+                  })}
               </div>
             </ScrollArea>
           </>
@@ -423,7 +423,7 @@ export default function POSPage() {
                       "flex flex-col items-center justify-center rounded-xl border-2 p-3 cursor-pointer transition-all min-h-[80px]",
                       TABLE_COLORS[t.status],
                       selectedTable === t.label &&
-                        "ring-2 ring-orange-500 ring-offset-1"
+                      "ring-2 ring-orange-500 ring-offset-1"
                     )}
                     onClick={() => {
                       selectTable(t.label);
@@ -472,66 +472,66 @@ export default function POSPage() {
             <div className="space-y-2">
               {ordersLoading
                 ? Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-20 rounded-xl" />
-                  ))
+                  <Skeleton key={i} className="h-20 rounded-xl" />
+                ))
                 : liveOrders.map((order: Order) => (
-                    <div
-                      key={order.id}
-                      className="rounded-xl border bg-card p-3"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-bold font-mono">
-                              {order.orderNumber}
-                            </p>
-                            {order.tableLabel && (
-                              <Badge variant="outline" className="text-xs">
-                                {order.tableLabel}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {order.items.length} items · ₹
-                            {order.total.toFixed(2)}
+                  <div
+                    key={order.id}
+                    className="rounded-xl border bg-card p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold font-mono">
+                            {order.orderNumber}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {order.items.map((i) => i.name).join(", ")}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-1.5">
-                          <Badge
-                            className={cn(
-                              "text-[9px]",
-                              order.paymentStatus === "pending"
-                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
-                                : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                            )}
-                          >
-                            {order.paymentStatus === "pending"
-                              ? "Unpaid"
-                              : "Paid"}
-                          </Badge>
-                          {order.paymentStatus === "pending" && (
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-green-600 hover:bg-green-700"
-                              disabled={markPaid.isPending}
-                              onClick={() =>
-                                markPaid.mutate({
-                                  orderId: order.id,
-                                  method: "cash",
-                                })
-                              }
-                            >
-                              <CheckCircle2 className="mr-1 h-3 w-3" />
-                              Mark Paid
-                            </Button>
+                          {order.tableLabel && (
+                            <Badge variant="outline" className="text-xs">
+                              {order.tableLabel}
+                            </Badge>
                           )}
                         </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {order.items.length} items · ₹
+                          {order.total.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {order.items.map((i) => i.name).join(", ")}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <Badge
+                          className={cn(
+                            "text-[9px]",
+                            order.paymentStatus === "pending"
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+                              : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                          )}
+                        >
+                          {order.paymentStatus === "pending"
+                            ? "Unpaid"
+                            : "Paid"}
+                        </Badge>
+                        {order.paymentStatus === "pending" && (
+                          <Button
+                            size="sm"
+                            className="h-7 text-xs bg-green-600 hover:bg-green-700"
+                            disabled={markPaid.isPending}
+                            onClick={() =>
+                              markPaid.mutate({
+                                orderId: order.id,
+                                method: "cash",
+                              })
+                            }
+                          >
+                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                            Mark Paid
+                          </Button>
+                        )}
                       </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
             </div>
           </ScrollArea>
         )}
