@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
-from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload, joinedload
 from typing import List, Optional
 from pydantic import BaseModel
@@ -99,11 +98,14 @@ async def get_active_orders(
         query = query.where(Order.kitchen_status == status)
 
     # Cursor-based — use created_at for live feed
-    if cursor:
+    if cursor and cursor.strip():
         cursor_data = decode_cursor(cursor)
         last_id = cursor_data.get("id")
         if last_id:
-            query = query.where(Order.id > uuid.UUID(last_id))
+            try:
+                query = query.where(Order.id > uuid.UUID(last_id))
+            except ValueError:
+                pass
 
     # Total count
     count_result = await db.execute(
