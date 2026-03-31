@@ -163,11 +163,12 @@ export interface WhatsAppCampaign {
   restaurantId: string;
   name: string;
   templateId: string;
-  targetSegment: "all" | "repeat" | "inactive" | "high_value";
-  status: "draft" | "scheduled" | "sent" | "failed";
+  targetSegment: "all" | "repeat" | "inactive" | "high_value" | "churned" | "new";
+  status: "draft" | "scheduled" | "sent" | "failed" | "queued";
   scheduledAt: string | null;
   sentAt: string | null;
   recipientCount: number;
+  sentCount: number;
   createdAt: string;
 }
 

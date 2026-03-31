@@ -14,6 +14,12 @@ from typing import Optional
 
 router = APIRouter()
 
+class MenuItemUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    price_offline: Optional[Decimal] = None
+    qr_discount_percent: Optional[Decimal] = None
+    is_available: Optional[bool] = None
 
 # --- Schemas ---
 class CategoryResponse(BaseModel):
@@ -139,3 +145,112 @@ async def get_menu_item(
         item=MenuItemResponse.model_validate(item),
         upsells=upsell_items,
     )
+
+# ─── New: List categories for X-Restaurant-ID ──────────────────────
+@router.get("/menu/categories")
+async def list_categories(
+    restaurant: Restaurant = Depends(get_valid_restaurant),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Category).where(
+            Category.restaurant_id == restaurant.id,
+            Category.deleted_at == None
+        ).order_by(Category.name)
+    )
+    cats = result.scalars().all()
+    return {
+        "data": [{"id": str(c.id), "name": c.name, "restaurantId": str(c.restaurant_id), "sortOrder": 0, "imageUrl": None} for c in cats],
+        "success": True,
+        "message": "Categories fetched"
+    }
+
+
+# ─── New: List menu items for X-Restaurant-ID ──────────────────────
+@router.get("/menu/items")
+async def list_menu_items(
+    category_id: Optional[str] = None,
+    limit: int = 100,
+    restaurant: Restaurant = Depends(get_valid_restaurant),
+    db: AsyncSession = Depends(get_db),
+):
+    import uuid as _uuid
+    query = select(MenuItem, Category).join(
+        Category, MenuItem.category_id == Category.id
+    ).where(
+        MenuItem.restaurant_id == restaurant.id,
+        MenuItem.deleted_at == None
+    )
+    if category_id:
+        query = query.where(MenuItem.category_id == _uuid.UUID(category_id))
+
+    result = await db.execute(query.limit(limit))
+    rows = result.all()
+
+    items = []
+    for item, cat in rows:
+        items.append({
+            "id": str(item.id),
+            "restaurantId": str(item.restaurant_id),
+            "categoryId": str(item.category_id),
+            "categoryName": cat.name,
+            "name": item.name,
+            "description": item.description or "",
+            "priceOffline": float(item.price_offline),
+            "qrDiscountPercent": float(item.qr_discount_percent),
+            "imageUrl": item.image_url,
+            "dietType": "veg",
+            "isPopular": False,
+            "isRecommended": False,
+            "isAvailable": item.is_available,
+            "preparationTimeMinutes": 0,
+            "tags": [],
+            "crossSells": [],
+            "aggregatorMappingId": item.aggregator_mapping_id,
+        })
+
+    return {
+        "data": {"items": items, "totalCount": len(items), "hasMore": False, "nextCursor": None},
+        "success": True,
+        "message": "Menu items fetched"
+    }
+
+
+# ─── New: Toggle availability (alias used by admin useToggleItemAvailability) ──
+@router.patch("/menu/items/{item_id}")
+async def patch_menu_item(
+    item_id: uuid.UUID,
+    request: MenuItemUpdateRequest,
+    restaurant: Restaurant = Depends(get_valid_restaurant),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(MenuItem).where(
+            MenuItem.id == item_id,
+            MenuItem.restaurant_id == restaurant.id,
+            MenuItem.deleted_at == None
+        )
+    )
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    if request.name is not None:
+        item.name = request.name
+    if request.description is not None:
+        item.description = request.description
+    if request.price_offline is not None:
+        item.price_offline = request.price_offline
+    if request.qr_discount_percent is not None:
+        item.qr_discount_percent = request.qr_discount_percent
+    if request.is_available is not None:
+        item.is_available = request.is_available
+        from app.core.websocket import manager as ws_manager
+        await ws_manager.emit_to_all(
+            restaurant_id=str(restaurant.id),
+            event="menu.item_toggled",
+            data={"itemId": str(item_id), "isAvailable": request.is_available}
+        )
+
+    await db.commit()
+    return {"data": {"id": str(item_id), "isAvailable": item.is_available}, "success": True, "message": "Item updated"}

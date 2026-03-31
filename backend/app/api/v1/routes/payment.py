@@ -154,10 +154,14 @@ async def generate_razorpay_for_existing_order(
     
     # Map to expected frontend RazorpayOrderResponse
     return {
-        "keyId": settings.RAZORPAY_KEY_ID,
-        "amount": int(bill.total_qr_price * 100),
-        "currency": "INR",
-        "razorpayOrderId": response["razorpay_order_id"],
+        "data": {
+            "keyId": settings.RAZORPAY_KEY_ID,
+            "amount": int(bill.total_qr_price * 100),
+            "currency": "INR",
+            "razorpayOrderId": response["razorpay_order_id"],
+        },
+        "success": True,
+        "message": "Razorpay order created"
     }
 
 

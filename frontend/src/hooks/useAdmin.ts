@@ -55,9 +55,10 @@ export function useRechargeWallet() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (amountInr: number) => {
-      const { data } = await api.post<
-        ApiResponse<{ razorpayOrderId: string; amount: number; keyId: string }>
-      >("/api/v1/admin/whatsapp/wallet/recharge", { amount: amountInr });
+      const { data } = await api.post<ApiResponse<{ razorpayOrderId: string; amount: number; keyId: string }>>(
+        "/api/v1/admin/whatsapp/wallet/recharge",
+        { amount: amountInr }
+      );
       return data.data;
     },
     onSuccess: (rzpData) => {

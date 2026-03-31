@@ -163,12 +163,13 @@ async def get_active_orders(
         
     last_id = str(orders[-1].id) if orders else None
 
-    return make_paginated_response(
+    paginated = make_paginated_response(
         items=payload_list,
         total_count=total_count,
         limit=limit,
         last_id=last_id,
     )
+    return {"data": paginated, "success": True, "message": "Orders fetched"}
 
 
 @router.patch("/staff/orders/{order_id}/status", response_model=dict)
@@ -210,9 +211,9 @@ async def update_order_status(
         role="kitchen",
         event="order.status_changed",
         data={
-            "order_id": str(order_id),
-            "new_status": request.status,
-            "table_id": str(order.table_id) if order.table_id else None,
+            "orderId": str(order_id),
+            "kitchenStatus": request.status,
+            "tableId": str(order.table_id) if order.table_id else None,
         }
     )
 
@@ -222,8 +223,8 @@ async def update_order_status(
         role="cashier",
         event="order.status_changed",
         data={
-            "order_id": str(order_id),
-            "new_status": request.status,
+            "orderId": str(order_id),
+            "kitchenStatus": request.status,
         }
     )
 
@@ -234,12 +235,44 @@ async def update_order_status(
             role="customer",
             event="your_order_is_ready",
             data={
-                "order_id": str(order_id),
+                "orderId": str(order_id),
                 "message": "Your order is ready! 🍽️",
             }
         )
 
     return {"order_id": str(order_id), "new_status": request.status}
+
+@router.post("/staff/orders/{order_id}/payment")
+async def mark_order_paid(
+    order_id: uuid.UUID,
+    request: dict,
+    restaurant: Restaurant = Depends(get_valid_restaurant),
+    token_data: dict = Depends(get_current_staff),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark an order as cash-paid at counter."""
+    result = await db.execute(
+        select(Order).where(
+            Order.id == order_id,
+            Order.restaurant_id == restaurant.id,
+            Order.deleted_at == None
+        )
+    )
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    order.payment_status = "paid_cash"
+    await db.commit()
+
+    await manager.emit_to_role(
+        restaurant_id=str(restaurant.id),
+        role="cashier",
+        event="order.payment_received",
+        data={"orderId": str(order_id)}
+    )
+
+    return {"data": {"orderId": str(order_id), "paymentStatus": "paid_cash"}, "success": True, "message": "Marked as paid"}
 
 @router.post("/staff/orders/manual", status_code=201)
 async def create_manual_order(
@@ -446,4 +479,12 @@ async def get_print_data(
         )
         table = table_result.scalar_one_or_none()
         if table:
-            table_number = ta
+            table_number = table.table_number
+
+    return PrintResponse(
+        order_id=str(order_id),
+        table_number=table_number,
+        items=items_data,
+        subtotal=subtotal,
+        message="Print data ready"
+    )

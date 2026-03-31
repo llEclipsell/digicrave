@@ -186,7 +186,7 @@ export function useUpdateKitchenStatus() {
     }) => {
       const { data } = await api.patch<ApiResponse<Order>>(
         `/api/v1/staff/orders/${orderId}/status`,
-        { kitchen_status: status }
+        { status }
       );
       return data.data;
     },
