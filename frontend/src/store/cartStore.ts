@@ -61,24 +61,28 @@ export const useCartStore = create<CartState>()(
       initSession(restaurantId, tableId) {
         const state = get();
 
-        // If the table and restaurant match exactly, do nothing (keep the existing cart)
-        if (state.tableId === tableId && state.restaurantId === restaurantId) {
+        // 1. If there is a tableId in the URL, AND it is explicitly different from the one in memory,
+        // it means the customer scanned a NEW QR code for a different table. WE WIPE.
+        if (tableId && state.tableId && state.tableId !== tableId) {
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("dc_session_orders");
+          }
+          set({
+            restaurantId: restaurantId || state.restaurantId,
+            tableId,
+            items: [],
+            breakdown: { subtotal: 0, gst: 0, platformFee: 0, gatewayFee: 0, total: 0, offlineTotal: 0, savings: 0 },
+            pricingValid: true,
+            specialInstructions: "",
+          });
           return;
         }
 
-        // NEW FIX: Wipe the old table's live orders/bill history from local storage
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("dc_session_orders");
-        }
-
-        // If they don't match, wipe the cart completely.
+        // 2. Otherwise (e.g., they just refreshed, or clicked back to the menu without the ?table param),
+        // we DO NOT wipe. We just keep their session alive using the existing memory.
         set({
-          restaurantId,
-          tableId,
-          items: [],
-          breakdown: { subtotal: 0, gst: 0, platformFee: 0, gatewayFee: 0, total: 0, offlineTotal: 0, savings: 0 },
-          pricingValid: true,
-          specialInstructions: "",
+          restaurantId: restaurantId || state.restaurantId,
+          tableId: tableId || state.tableId,
         });
       },
 

@@ -40,7 +40,11 @@ export default function CartPage() {
   const placeOrder = usePlaceOrder();
   
   const handleGoToMenu = () => {
-    router.push(restaurantId ? `/menu/${restaurantId}` : "/menu");
+    let url = restaurantId ? `/menu/${restaurantId}` : "/menu";
+    if (tableId) {
+      url += `?table=${tableId}`;
+    }
+    router.push(url);
   };
 
   if (items.length === 0 && !placedOrderId) {
