@@ -61,23 +61,20 @@ export const useCartStore = create<CartState>()(
       initSession(restaurantId, tableId) {
         const state = get();
 
-        // If the table or restaurant has changed from what is currently active, wipe the cart
-        if (
-          (state.tableId !== null && state.tableId !== tableId) ||
-          (state.restaurantId !== "" && state.restaurantId !== restaurantId)
-        ) {
-          set({
-            restaurantId,
-            tableId,
-            items: [],
-            breakdown: EMPTY_BREAKDOWN,
-            pricingValid: true,
-            specialInstructions: "",
-          });
-        } else {
-          // Otherwise, just initialize them normally
-          set({ restaurantId, tableId });
+        // If the table and restaurant match exactly, do nothing (keep the existing cart)
+        if (state.tableId === tableId && state.restaurantId === restaurantId) {
+          return;
         }
+
+        // If they don't match (e.g., customer changed from ?table=1 to ?table=2), wipe the cart completely.
+        set({
+          restaurantId,
+          tableId,
+          items: [],
+          breakdown: { subtotal: 0, gst: 0, platformFee: 0, gatewayFee: 0, total: 0, offlineTotal: 0, savings: 0 },
+          pricingValid: true,
+          specialInstructions: "",
+        });
       },
 
       addItem(menuItem) {
@@ -160,7 +157,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: "digicrave-cart",
+      name: "digicrave-cart-v2",
       storage: createJSONStorage(() => sessionStorage), // clears on tab close
       partialize: (state) => ({
         restaurantId: state.restaurantId,
