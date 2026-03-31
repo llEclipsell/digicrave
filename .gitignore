@@ -1,0 +1,17 @@
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE settings
+.vscode/
+.idea/
+
+# Ignore environment variables at the root
+.env
+.env.local
+
+# Optional: Ignore the large dependency folders 
+# (just as a double-safety for your subfolders)
+frontend/node_modules/
+backend/venv/
+backend/.venv/

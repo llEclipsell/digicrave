@@ -70,3 +70,39 @@ export function useToggleItemAvailability() {
     },
   });
 }
+
+// ── Menu by Slug (matches backend GET /api/v1/menu/{slug}) ───────────
+interface MenuBySlugCategory {
+  id: string;
+  name: string;
+}
+
+interface MenuBySlugItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price_offline: number;
+  qr_discount_percent: number;
+  is_available: boolean;
+  image_url: string | null;
+  category_id: string;
+}
+
+interface MenuBySlugResponse {
+  categories: MenuBySlugCategory[];
+  items: MenuBySlugItem[];
+}
+
+export function useMenuBySlug(slug: string) {
+  return useQuery({
+    queryKey: ["menu", "slug", slug],
+    queryFn: async () => {
+      const { data } = await api.get<MenuBySlugResponse>(
+        `/api/v1/menu/${slug}`
+      );
+      return data;
+    },
+    enabled: !!slug,
+    staleTime: 60_000,
+  });
+}

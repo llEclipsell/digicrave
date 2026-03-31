@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from app.core.security import (
     hash_password, verify_password,
     encrypt_field, decrypt_field,
-    create_access_token
+    create_access_token, create_refresh_token
 )
 from app.models.staff import Staff
 from app.models.restaurant import Restaurant
@@ -114,8 +114,15 @@ async def login_staff(
         "restaurant_id": str(staff.restaurant_id),
     })
 
+    refresh = create_refresh_token({
+        "sub": str(staff.id),
+        "role": staff.role,
+        "restaurant_id": str(staff.restaurant_id),
+    })
+
     return {
         "access_token": token,
+        "refresh_token": refresh,
         "token_type": "bearer",
         "role": staff.role,
         "restaurant_id": str(staff.restaurant_id),
@@ -206,12 +213,19 @@ async def verify_customer_otp(
         "restaurant_id": str(restaurant_id),
     })
 
+    refresh = create_refresh_token({
+        "sub": str(customer.id),
+        "role": "customer",
+        "restaurant_id": str(restaurant_id),
+    })
+
     name = None
     if customer.name_encrypted:
         name = decrypt_field(customer.name_encrypted)
 
     return {
         "customer_token": token,
+        "refresh_token": refresh,
         "name": name,
         "is_new_customer": is_new,
         "message": "Login successful"

@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.api.v1.dependencies import get_restaurant_id
 from app.services import auth as auth_service
 from app.services.otp import generate_otp, store_otp
+from app.core.security import create_access_token, decode_refresh_token
 from app.schemas.auth import (
     StaffSignupRequest, StaffSignupResponse,
     StaffLoginRequest, StaffLoginResponse,
     OTPSendRequest, OTPSendResponse,
     OTPVerifyRequest, OTPVerifyResponse,
+    RefreshTokenRequest, RefreshTokenResponse,
 )
 import uuid
 
@@ -91,3 +93,29 @@ async def verify_otp(
         request_ip=client_ip,
     )
     return OTPVerifyResponse(**result)
+
+
+@router.post("/auth/refresh", response_model=RefreshTokenResponse)
+async def refresh_access_token(
+    data: RefreshTokenRequest,
+):
+    """
+    POST /auth/refresh
+    Accepts a valid refresh token, returns a new access token.
+    Called by the frontend's axios interceptor on 401 responses.
+    """
+    payload = decode_refresh_token(data.refresh_token)
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired refresh token"
+        )
+
+    # Issue new access token with same claims
+    new_access_token = create_access_token({
+        "sub": payload["sub"],
+        "role": payload["role"],
+        "restaurant_id": payload["restaurant_id"],
+    })
+
+    return RefreshTokenResponse(access_token=new_access_token)

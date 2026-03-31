@@ -20,6 +20,7 @@ const MAX_RECONNECT_MS = 30_000;
 class DigiCraveWebSocket {
   private socket: WebSocket | null = null;
   private restaurantId = "";
+  private role = "customer";
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
@@ -31,8 +32,9 @@ class DigiCraveWebSocket {
   private disconnectHandlers: Set<ConnectionHandler> = new Set();
 
   // ── Public API ────────────────────────────────────────────────────
-  connect(restaurantId: string) {
+  connect(restaurantId: string, role: "kitchen" | "cashier" | "customer" = "customer") {
     this.restaurantId = restaurantId;
+    this.role = role;
     this.intentionalClose = false;
     this._connect();
   }
@@ -68,7 +70,7 @@ class DigiCraveWebSocket {
       ? localStorage.getItem("dc_access_token") ?? ""
       : "";
 
-    const url = `${WS_URL}/ws/orders/${this.restaurantId}?token=${token}`;
+    const url = `${WS_URL}/api/v1/ws/${this.restaurantId}/${this.role}?token=${token}`;
     this.socket = new WebSocket(url);
 
     this.socket.onopen = () => {
@@ -84,7 +86,7 @@ class DigiCraveWebSocket {
         const data = JSON.parse(evt.data as string) as WSEvent<unknown>;
 
         // Handle PONG
-        if ((data as unknown as { type: string }).type === "pong") return;
+        if ((data as unknown as { event: string }).event === "PONG") return;
 
         this.lastEventTimestamp = data.timestamp;
         const listeners = this.handlers.get(data.event);
@@ -111,7 +113,7 @@ class DigiCraveWebSocket {
     this._stopPing();
     this.pingTimer = setInterval(() => {
       if (this.socket?.readyState === WebSocket.OPEN) {
-        this.socket.send(JSON.stringify({ type: "ping" }));
+        this.socket.send(JSON.stringify({ event: "PING" }));
       }
     }, PING_INTERVAL_MS);
   }
@@ -126,7 +128,7 @@ class DigiCraveWebSocket {
     if (this.lastEventTimestamp && this.socket?.readyState === WebSocket.OPEN) {
       this.socket.send(
         JSON.stringify({
-          type: "RESYNC_REQUEST",
+          event: "RESYNC_REQUEST",
           last_event_timestamp: this.lastEventTimestamp,
         })
       );

@@ -46,8 +46,8 @@ async def check_billing_lock(restaurant_id: uuid.UUID, db: AsyncSession):
 
 async def create_order(
     restaurant_id: uuid.UUID,
-    customer_id: uuid.UUID,
-    table_id: uuid.UUID,
+    customer_id: uuid.UUID | None,
+    table_id: uuid.UUID | None,
     items_input: list,
     payment_method: str,
     idempotency_key: str,
@@ -164,6 +164,7 @@ async def _create_razorpay_order(
     bill,
     restaurant_id: uuid.UUID,
     db: AsyncSession,
+    session_order_ids: list[str] = None
 ) -> dict:
     """
     Blueprint Golden Rule 2: Payment Split
@@ -178,7 +179,7 @@ async def _create_razorpay_order(
     restaurant_amount_paise = total_paise - platform_fee_paise - int(bill.gateway_fee * 100)
 
     try:
-        rzp_order = client.order.create({
+        payload = {
             "amount": total_paise,
             "currency": "INR",
             "receipt": str(order.id),
@@ -204,7 +205,14 @@ async def _create_razorpay_order(
                     }
                 }
             ]
-        })
+        }
+        
+        if session_order_ids:
+            payload["notes"] = {
+                "session_orders": ",".join(session_order_ids)[:250] # Razorpay notes limit 254 chars
+            }
+            
+        rzp_order = client.order.create(payload)
 
         # Update order with Razorpay order ID
         order.payment_status = "pending"

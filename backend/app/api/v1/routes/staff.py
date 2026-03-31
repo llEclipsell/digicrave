@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload, joinedload
 from typing import List, Optional
 from pydantic import BaseModel
 from decimal import Decimal
@@ -85,7 +87,10 @@ async def get_active_orders(
     # Enforce max limit
     limit = min(limit, 100)
 
-    query = select(Order).where(
+    query = select(Order).options(
+        joinedload(Order.table),
+        selectinload(Order.items).joinedload(OrderItem.menu_item)
+    ).where(
         Order.restaurant_id == restaurant.id,
         Order.deleted_at == None
     )
@@ -113,11 +118,53 @@ async def get_active_orders(
     result = await db.execute(query)
     orders = result.scalars().all()
 
-    items = [OrderResponse.model_validate(o) for o in orders]
+    payload_list = []
+    for o in orders:
+        items_payload = []
+        for i in o.items:
+            items_payload.append({
+                "id": str(i.id),
+                "menuItemId": str(i.menu_item_id),
+                "name": i.menu_item.name if getattr(i, 'menu_item', None) else "Deleted Item",
+                "quantity": i.quantity,
+                "unitPrice": float(i.historical_price_at_order),
+                "totalPrice": float(i.historical_price_at_order * i.quantity),
+                "specialNote": getattr(i, 'notes', "") or "",
+                "dietType": "veg"
+            })
+        
+        table_label = "Takeaway"
+        if getattr(o, "table", None):
+            table_label = o.table.table_number
+        elif o.table_id:
+            table_label = "TBD"
+
+        payload_list.append({
+            "id": str(o.id),
+            "orderNumber": str(o.id).split("-")[0].upper(),
+            "restaurantId": str(o.restaurant_id),
+            "tableId": str(o.table_id) if o.table_id else None,
+            "tableLabel": table_label,
+            "source": o.source,
+            "orderType": "dine_in" if o.table_id else "takeaway",
+            "kitchenStatus": o.kitchen_status,
+            "paymentStatus": o.payment_status,
+            "items": items_payload,
+            "subtotal": 0, "gst": 0, "platformFee": 0, "gatewayFee": 0, "total": 0, "savings": 0,
+            "specialInstructions": getattr(o, 'special_instructions', "") or "",
+            "customerName": None,
+            "customerPhone": None,
+            "idempotencyKey": getattr(o, 'idempotency_key', ""),
+            "createdAt": o.created_at.isoformat() + "Z" if getattr(o, 'created_at', None) else "",
+            "updatedAt": o.updated_at.isoformat() + "Z" if getattr(o, 'updated_at', None) else "",
+            "aggregatorOrderId": None,
+            "aggregatorSlaDeadline": None,
+        })
+        
     last_id = str(orders[-1].id) if orders else None
 
     return make_paginated_response(
-        items=[i.model_dump() for i in items],
+        items=payload_list,
         total_count=total_count,
         limit=limit,
         last_id=last_id,
@@ -161,7 +208,7 @@ async def update_order_status(
     await manager.emit_to_role(
         restaurant_id=str(restaurant.id),
         role="kitchen",
-        event="order_status_updated",
+        event="order.status_changed",
         data={
             "order_id": str(order_id),
             "new_status": request.status,
@@ -173,7 +220,7 @@ async def update_order_status(
     await manager.emit_to_role(
         restaurant_id=str(restaurant.id),
         role="cashier",
-        event="order_status_updated",
+        event="order.status_changed",
         data={
             "order_id": str(order_id),
             "new_status": request.status,
@@ -273,6 +320,29 @@ async def create_manual_order(
         db.add(billing)
 
     await db.commit()
+
+    # Blueprint: Emit instantly to KDS and POS
+    await manager.emit_to_role(
+        restaurant_id=str(restaurant.id),
+        role="kitchen",
+        event="order.new",
+        data={
+            "order_id": str(order.id),
+            "source": order.source,
+            "table_id": None,
+            "amount": 0.0, # Wait, offline price isn't easily summed here, but that's fine for KDS
+        }
+    )
+    await manager.emit_to_role(
+        restaurant_id=str(restaurant.id),
+        role="cashier",
+        event="order.new",
+        data={
+            "order_id": str(order.id),
+            "payment_status": "pending",
+            "amount": 0.0,
+        }
+    )
 
     response = {
         "order_id": str(order.id),

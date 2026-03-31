@@ -158,6 +158,27 @@ export interface WhatsAppWallet {
   estimatedMessagesRemaining: number;
 }
 
+export interface WhatsAppCampaign {
+  id: string;
+  restaurantId: string;
+  name: string;
+  templateId: string;
+  targetSegment: "all" | "repeat" | "inactive" | "high_value";
+  status: "draft" | "scheduled" | "sent" | "failed";
+  scheduledAt: string | null;
+  sentAt: string | null;
+  recipientCount: number;
+  createdAt: string;
+}
+
+// ─── Razorpay ─────────────────────────────────────────────────────────
+export interface RazorpayOrderResponse {
+  razorpayOrderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+}
+
 // ─── WebSocket ────────────────────────────────────────────────────────
 export type WSEventType =
   | "order.new"

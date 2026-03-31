@@ -18,7 +18,7 @@ const RID =
     : (process.env.NEXT_PUBLIC_RESTAURANT_ID ?? "");
 
 // ── Core connection hook ──────────────────────────────────────────────
-export function useWebSocketConnection() {
+export function useWebSocketConnection(role: "kitchen" | "cashier" | "customer" = "customer") {
   const [connected, setConnected] = useState(false);
   const [lastConnectedAt, setLastConnectedAt] = useState<Date | null>(null);
 
@@ -28,12 +28,12 @@ export function useWebSocketConnection() {
       setLastConnectedAt(new Date());
     });
     wsManager.onDisconnect(() => setConnected(false));
-    wsManager.connect(RID);
+    wsManager.connect(RID, role);
 
     return () => {
       // Don't disconnect on unmount — singleton persists across route changes
     };
-  }, []);
+  }, [role]);
 
   return { connected, lastConnectedAt };
 }
@@ -61,15 +61,10 @@ export function useOrderWebSocket() {
   const { connected } = useWebSocketConnection();
 
   // New order arrived
-  useWSEvent<Order>("order.new", useCallback((e) => {
-    qc.setQueryData<Order[]>(
-      queryKeys.orders.live(RID),
-      (prev = []) => [e.payload, ...prev]
-    );
-    qc.setQueryData<KDSOrder[]>(
-      queryKeys.kds.queue(RID),
-      (prev = []) => [{ ...e.payload, elapsedSeconds: 0, isUrgent: false }, ...prev]
-    );
+  useWSEvent<any>("order.new", useCallback(() => {
+    qc.invalidateQueries({ queryKey: queryKeys.orders.live(RID) });
+    qc.invalidateQueries({ queryKey: queryKeys.kds.queue(RID) });
+    
     // Audible alert for KDS (Blueprint requirement)
     if (typeof window !== "undefined") {
       const ctx = new AudioContext();

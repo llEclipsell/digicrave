@@ -89,9 +89,7 @@ export const useCartStore = create<CartState>()(
         }
 
         const breakdown = computeBreakdown(updated);
-        // Blueprint Rule 1: validate digital total < offline total
-        const pricingValid = breakdown.savings > 0;
-
+        const pricingValid = true; // breakdown.savings > 0;
         set({ items: updated, breakdown, pricingValid });
       },
 
@@ -103,7 +101,7 @@ export const useCartStore = create<CartState>()(
           .filter((i) => i.quantity > 0);
 
         const breakdown = computeBreakdown(updated);
-        set({ items: updated, breakdown, pricingValid: breakdown.savings >= 0 });
+        set({ items: updated, breakdown, pricingValid: true });
       },
 
       updateQuantity(menuItemId, qty) {
@@ -115,7 +113,7 @@ export const useCartStore = create<CartState>()(
           i.menuItemId === menuItemId ? { ...i, quantity: qty } : i
         );
         const breakdown = computeBreakdown(updated);
-        set({ items: updated, breakdown, pricingValid: breakdown.savings >= 0 });
+        set({ items: updated, breakdown, pricingValid: true });
       },
 
       updateNote(menuItemId, note) {

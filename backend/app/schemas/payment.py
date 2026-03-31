@@ -6,9 +6,13 @@ from app.schemas.pricing import CartItemSchema
 
 class CreateOrderRequest(BaseModel):
     items: List[CartItemSchema]
-    table_id: UUID4
+    table_id: Optional[str] = None
     payment_method: str  # "upi" or "cash"
     idempotency_key: str
+    special_instructions: Optional[str] = None
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
+    marketing_opt_in: Optional[bool] = None
 
 
 class CreateOrderResponse(BaseModel):
@@ -22,6 +26,17 @@ class CreateOrderResponse(BaseModel):
 class RazorpayWebhookPayload(BaseModel):
     event: str
     payload: dict
+
+
+class RazorpayOrderRequest(BaseModel):
+    order_id: Optional[str] = None
+    order_ids: Optional[List[str]] = None
+
+class RazorpayOrderResponse(BaseModel):
+    keyId: str
+    amount: int
+    currency: str
+    razorpayOrderId: str
 
 
 class BillSummary(BaseModel):

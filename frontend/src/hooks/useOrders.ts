@@ -61,22 +61,52 @@ interface PlaceOrderPayload {
   marketingOptIn?: boolean;
 }
 
+export interface CreateOrderResponseData {
+  order_id: string;
+  razorpay_order_id: string | null;
+  payment_method: string;
+  final_amount: number;
+  message: string;
+}
+
 export function usePlaceOrder() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: PlaceOrderPayload) => {
-      const { data } = await api.post<ApiResponse<Order>>(
-        "/api/v1/orders",
-        payload
+      // Backend expects idempotency_key in body + X-Idempotency-Key header
+      const idempotencyKey = crypto.randomUUID();
+      const backendPayload = {
+        table_id: payload.tableId || null,
+        payment_method: payload.paymentMethod,
+        idempotency_key: idempotencyKey,
+        items: payload.items.map((i) => ({
+          menu_item_id: i.menuItemId,
+          quantity: i.quantity,
+          special_note: i.specialNote,
+        })),
+        special_instructions: payload.specialInstructions,
+        customer_name: payload.customerName,
+        customer_phone: payload.customerPhone,
+        marketing_opt_in: payload.marketingOptIn,
+      };
+
+      const { data } = await api.post<CreateOrderResponseData>(
+        "/api/v1/order/create",
+        backendPayload,
+        {
+          headers: {
+            "X-Idempotency-Key": idempotencyKey,
+          },
+        }
       );
-      return data.data;
+      return data;
     },
     onSuccess: (order) => {
       qc.invalidateQueries({ queryKey: queryKeys.orders.live(RID) });
-      toast.success(`Order #${order.orderNumber} placed!`);
+      toast.success(`Order #${order?.order_id?.split("-")[0]} placed!`);
     },
-    onError: () => {
-      toast.error("Failed to place order. Please try again.");
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.detail || "Failed to place order. Please try again.");
     },
   });
 }
@@ -84,13 +114,62 @@ export function usePlaceOrder() {
 // ── Razorpay order creation ────────────────────────────────────────────
 export function useCreateRazorpayOrder() {
   return useMutation({
-    mutationFn: async (internalOrderId: string) => {
+    mutationFn: async (payload: { orderId?: string; orderIds?: string[] }) => {
       const { data } = await api.post<ApiResponse<RazorpayOrderResponse>>(
         "/api/v1/payments/razorpay/order",
-        { order_id: internalOrderId }
+        { 
+          order_id: payload.orderId,
+          order_ids: payload.orderIds 
+        }
       );
       return data.data;
     },
+  });
+}
+
+// ── Session ────────────────────────────────────────────────────────
+export interface SessionBill {
+  orderIds: string[];
+  items: {
+    id: string;
+    orderId: string;
+    menuItemId: string;
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    specialNote: string;
+  }[];
+  subtotal: number;
+  gst: number;
+  platformFee: number;
+  gatewayFee: number;
+  total: number;
+}
+
+export function useSessionBill(orderIds: string[]) {
+  return useQuery({
+    queryKey: queryKeys.orders.detail("session-bill-" + orderIds.join(",")),
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<SessionBill>>(
+        `/api/v1/session/bill?order_ids=${orderIds.join(",")}`
+      );
+      return data.data;
+    },
+    enabled: orderIds.length > 0,
+  });
+}
+
+export function useSessionOrders(orderIds: string[]) {
+  return useQuery({
+    queryKey: queryKeys.orders.detail("session-orders-" + orderIds.join(",")),
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<any[]>>(
+        `/api/v1/session/orders?order_ids=${orderIds.join(",")}`
+      );
+      return data.data;
+    },
+    enabled: orderIds.length > 0,
   });
 }
 

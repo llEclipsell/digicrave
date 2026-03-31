@@ -48,3 +48,4 @@ class OrderItem(Base, TimestampMixin):
     notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     order = relationship("Order", back_populates="items")
+    menu_item = relationship("MenuItem")

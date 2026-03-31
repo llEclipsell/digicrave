@@ -33,6 +33,7 @@ class StaffLoginRequest(BaseModel):
 
 class StaffLoginResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     role: str
     restaurant_id: str
@@ -81,6 +82,7 @@ class OTPVerifyRequest(BaseModel):
 
 class OTPVerifyResponse(BaseModel):
     customer_token: str
+    refresh_token: str
     name: Optional[str]
     is_new_customer: bool
     message: str
@@ -91,3 +93,13 @@ class TokenData(BaseModel):
     sub: str           # user_id or customer_id
     role: str          # owner | cashier | chef | waiter | customer
     restaurant_id: str
+
+
+# --- Refresh Token ---
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"

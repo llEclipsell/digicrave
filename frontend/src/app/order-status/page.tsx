@@ -2,16 +2,17 @@
 // src/app/order-status/page.tsx
 // Blueprint: Received → Preparing → Ready → Served
 
-import { useSearchParams } from "next/navigation";
-import { useOrder } from "@/hooks/useOrders";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useOrder, useCreateRazorpayOrder } from "@/hooks/useOrders";
 import { useWSEvent } from "@/hooks/useWebSocket";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryClient";
 import { Order } from "@/types";
-import { CheckCircle2, Clock, ChefHat, Bell, Package } from "lucide-react";
+import { CheckCircle2, Clock, ChefHat, Bell, Package, CreditCard, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 const STEPS = [
   { key: "received",  label: "Order Received",  icon: Package,   desc: "Your order is confirmed" },
@@ -22,8 +23,11 @@ const STEPS = [
 
 export default function OrderStatusPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const orderId = searchParams.get("id") ?? "";
   const { data: order, isLoading } = useOrder(orderId);
+  const createRazorpayOrder = useCreateRazorpayOrder();
+  const [isPaying, setIsPaying] = useState(false);
 
   const qc = useQueryClient();
   useWSEvent<{ orderId: string; kitchenStatus: string }>(
@@ -60,9 +64,20 @@ export default function OrderStatusPage() {
       <div className="mb-6 text-center">
         <p className="text-xs text-muted-foreground uppercase tracking-wider">Order</p>
         <p className="text-2xl font-bold font-mono">{order.orderNumber}</p>
-        {order.tableLabel && (
-          <p className="text-sm text-muted-foreground">Table {order.tableLabel}</p>
-        )}
+        <div className="flex items-center justify-center gap-2 mt-1">
+          {order.tableLabel && (
+            <span className="text-sm font-medium bg-muted px-2 py-0.5 rounded">Table {order.tableLabel}</span>
+          )}
+          {order.paymentStatus === "pending" ? (
+            <span className="text-sm font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 px-2 py-0.5 rounded">
+              Payment Pending
+            </span>
+          ) : (
+            <span className="text-sm font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 px-2 py-0.5 rounded">
+              Paid
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Stepper */}
@@ -129,10 +144,30 @@ export default function OrderStatusPage() {
         </div>
       </div>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
+      <p className="mt-4 text-center text-xs text-muted-foreground flex items-center justify-center gap-1 mb-24">
         <Clock className="h-3 w-3" />
         Live updates · No refresh needed
       </p>
+
+      {/* Tracking Page Ends Here */}
+      
+      {/* Sticky Back to Menu Actions */}
+      <div className="fixed bottom-0 left-0 right-0 border-t bg-background p-4 shadow-lg backdrop-blur-md">
+        <div className="mx-auto max-w-md space-y-3">
+          <Button
+            variant="outline"
+            className="w-full border-orange-200 text-orange-600 hover:bg-orange-50 h-12 text-base font-bold shadow-sm bg-white"
+            onClick={() => {
+              const slug = typeof window !== "undefined" ? localStorage.getItem("dc_restaurant_id") || "test-bistro" : "test-bistro";
+              const tableQuery = order.tableId ? `?table=${order.tableId}` : "";
+              router.push(`/menu/${slug}${tableQuery}`);
+            }}
+          >
+            + Add More Items (Back to Menu)
+          </Button>
+        </div>
+      </div>
+      
     </div>
   );
 }
