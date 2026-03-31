@@ -66,7 +66,12 @@ export const useCartStore = create<CartState>()(
           return;
         }
 
-        // If they don't match (e.g., customer changed from ?table=1 to ?table=2), wipe the cart completely.
+        // NEW FIX: Wipe the old table's live orders/bill history from local storage
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("dc_session_orders");
+        }
+
+        // If they don't match, wipe the cart completely.
         set({
           restaurantId,
           tableId,
