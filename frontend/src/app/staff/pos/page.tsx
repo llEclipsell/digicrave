@@ -68,8 +68,8 @@ function OrderPanel({
   onClearTable: () => void;
 }) {
   // All cart state comes from the POS store, scoped to tableLabel
-  const cart = usePOSStore((s) => s.getCart(tableLabel));
-  const payMethod = usePOSStore((s) => s.getPayMethod(tableLabel));
+  const cart = usePOSStore((s) => s.tableOrders[tableLabel]?.cart ?? []);
+  const payMethod = usePOSStore((s) => s.tableOrders[tableLabel]?.payMethod ?? "cash");
   const addToCart = usePOSStore((s) => s.addToCart);
   const removeFromCart = usePOSStore((s) => s.removeFromCart);
   const setPayMethod = usePOSStore((s) => s.setPayMethod);
@@ -257,7 +257,7 @@ export default function POSPage() {
   );
 
   // Get current cart from store (scoped to selectedTable)
-  const cartForTable = usePOSStore((s) => s.getCart(selectedTable));
+  const cartForTable = usePOSStore((s) => s.tableOrders[selectedTable]?.cart ?? []);
 
   async function handlePlaceOrder(payMethod: string) {
     if (!selectedTable || cartForTable.length === 0) return;
