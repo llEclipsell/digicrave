@@ -28,6 +28,7 @@ class Order(Base, TimestampMixin):
     preparation_deadline: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     restaurant = relationship("Restaurant", back_populates="orders")
+    table = relationship("Table", foreign_keys=[table_id])
     items = relationship("OrderItem", back_populates="order")
     transaction = relationship("Transaction", back_populates="order", uselist=False)
 

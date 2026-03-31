@@ -39,6 +39,7 @@ class Table(Base, TimestampMixin):
     )
 
     restaurant = relationship("Restaurant", back_populates="tables")
+    orders = relationship("Order", back_populates="table")
 
 class RestaurantSettings(Base, TimestampMixin):
     """
