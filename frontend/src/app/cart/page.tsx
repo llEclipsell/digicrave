@@ -109,9 +109,11 @@ export default function CartPage() {
     
     // Track order ID in session array for cumulative billing later
     if (typeof window !== "undefined") {
-      const existingStr = localStorage.getItem("dc_session_orders");
+      // DYNAMIC KEY: "dc_session_orders_1", etc.
+      const storageKey = tableId ? `dc_session_orders_${tableId}` : "dc_session_orders"; 
+      const existingStr = localStorage.getItem(storageKey);
       const existingParsed = existingStr ? JSON.parse(existingStr) : [];
-      localStorage.setItem("dc_session_orders", JSON.stringify([...existingParsed, order.order_id]));
+      localStorage.setItem(storageKey, JSON.stringify([...existingParsed, order.order_id]));
       window.dispatchEvent(new Event("dc_orders_updated"));
     }
 

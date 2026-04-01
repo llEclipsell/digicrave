@@ -62,16 +62,16 @@ export const useCartStore = create<CartState>()(
         const state = get();
 
         // 1. If there is a tableId in the URL, AND it is explicitly different from the one in memory,
-        // it means the customer scanned a NEW QR code for a different table. WE WIPE.
+        // it means the customer scanned a NEW QR code for a different table. WE WIPE THE PENDING CART.
         if (tableId && state.tableId && state.tableId !== tableId) {
+          // Dispatch event so the UI updates instantly
           if (typeof window !== "undefined") {
-            localStorage.removeItem("dc_session_orders");
             window.dispatchEvent(new Event("dc_orders_updated"));
           }
           set({
             restaurantId: restaurantId || state.restaurantId,
             tableId,
-            items: [],
+            items: [], // Pending items wiped
             breakdown: { subtotal: 0, gst: 0, platformFee: 0, gatewayFee: 0, total: 0, offlineTotal: 0, savings: 0 },
             pricingValid: true,
             specialInstructions: "",

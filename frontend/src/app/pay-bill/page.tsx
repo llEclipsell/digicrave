@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, ArrowLeft, Receipt, CreditCard, Banknote } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
 
 export default function PayBillPage() {
   const router = useRouter();
@@ -18,9 +19,11 @@ export default function PayBillPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [marketingOptIn, setMarketingOptIn] = useState(true);
   const [isPaying, setIsPaying] = useState(false);
+  const tableId = useCartStore((s) => s.tableId);
+  const storageKey = tableId ? `dc_session_orders_${tableId}` : "dc_session_orders";
 
   useEffect(() => {
-    const stored = localStorage.getItem("dc_session_orders");
+    const stored = localStorage.getItem(storageKey);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -53,7 +56,7 @@ export default function PayBillPage() {
           handler: () => {
             setIsPaying(false);
             // Clear session and redirect to success
-            localStorage.removeItem("dc_session_orders");
+            localStorage.removeItem(storageKey);
             router.push("/menu"); // Or a success page
           },
           modal: { ondismiss: () => setIsPaying(false) },
@@ -71,7 +74,7 @@ export default function PayBillPage() {
   const handlePayCash = () => {
     // For cash, just clear the session and go back to menu.
     // The backend already knows it's pending cash. Staff will collect it.
-    localStorage.removeItem("dc_session_orders");
+    localStorage.removeItem(storageKey);
     router.push("/menu");
   };
 
@@ -116,7 +119,7 @@ export default function PayBillPage() {
           All your orders for this session have been paid.
         </p>
         <Button onClick={() => {
-            localStorage.removeItem("dc_session_orders");
+            localStorage.removeItem(storageKey);
             router.push("/menu");
         }} variant="outline">
           Return to Menu

@@ -16,43 +16,50 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Receipt, Clock, ChevronRight, UtensilsCrossed } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useCartStore } from "@/store/cartStore";
 
 export function OrdersDrawer() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [orderIds, setOrderIds] = useState<string[]>([]);
+  
+  // 1. Get the current tableId from the store
+  const tableId = useCartStore((s) => s.tableId); 
 
   useEffect(() => {
     const loadOrders = () => {
-      const stored = localStorage.getItem("dc_session_orders");
+      // 2. Look in the dynamic bucket based on where the user currently is
+      const storageKey = tableId ? `dc_session_orders_${tableId}` : "dc_session_orders";
+      const stored = localStorage.getItem(storageKey);
+      
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
             setOrderIds(parsed);
           } else {
-            setOrderIds([]); // Fix: Ensure it clears if array is empty
+            setOrderIds([]);
           }
         } catch (e) {
           console.error("Failed to parse session orders", e);
           setOrderIds([]);
         }
       } else {
-        setOrderIds([]); // Fix: Ensure it clears if storage is wiped
+        setOrderIds([]);
       }
     };
 
-    loadOrders(); // 1. Run immediately on load
+    loadOrders(); // Run immediately on load
 
-    // 2. Listen for real-time updates from the Cart and Store
-    window.addEventListener("storage", loadOrders); // Cross-tab sync
-    window.addEventListener("dc_orders_updated", loadOrders); // Same-tab sync
+    // Listen for real-time updates
+    window.addEventListener("storage", loadOrders);
+    window.addEventListener("dc_orders_updated", loadOrders);
 
     return () => {
       window.removeEventListener("storage", loadOrders);
       window.removeEventListener("dc_orders_updated", loadOrders);
     };
-  }, []); // Fix: Empty dependency array means it stays synced forever
+  }, [tableId]); // 3. IMPORTANT: Add tableId here so the drawer re-renders when the table swaps!
 
   const { data: orders, isLoading } = useSessionOrders(orderIds);
 
