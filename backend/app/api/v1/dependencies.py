@@ -6,7 +6,7 @@ from app.models.restaurant import Restaurant
 import uuid
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
-from app.core.security import decode_access_token
+from app.core.security import decode_access_token, decode_session_token
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -106,3 +106,45 @@ async def get_current_customer_optional(
         return None
 
     return token_data
+
+async def get_table_session(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+) -> dict:
+    """Dependency for table-session protected customer routes"""
+    token_data = decode_session_token(credentials.credentials)
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Invalid or expired session token")
+    
+    # Resolve table_id
+    from app.models.restaurant import Table
+    result = await db.execute(
+        select(Table).where(
+            Table.restaurant_id == uuid.UUID(token_data["restaurant_id"]),
+            Table.table_number == str(token_data["table_number"])
+        )
+    )
+    table = result.scalar_one_or_none()
+    if table:
+        token_data["table_id"] = str(table.id)
+    else:
+        token_data["table_id"] = None
+        
+    return token_data
+
+async def get_table_restaurant(
+    session_data: dict = Depends(get_table_session),
+    db: AsyncSession = Depends(get_db)
+) -> Restaurant:
+    """Validates restaurant from session token actually exists in DB"""
+    restaurant_id = uuid.UUID(session_data["restaurant_id"])
+    result = await db.execute(
+        select(Restaurant).where(
+            Restaurant.id == restaurant_id,
+            Restaurant.deleted_at == None
+        )
+    )
+    restaurant = result.scalar_one_or_none()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    return restaurant

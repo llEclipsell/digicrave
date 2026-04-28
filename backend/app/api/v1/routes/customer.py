@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import uuid
 
 from app.core.database import get_db
-from app.api.v1.dependencies import get_current_customer, get_valid_restaurant
+from app.api.v1.dependencies import get_current_customer, get_valid_restaurant, get_table_session
 from app.models.customer import Customer, RestaurantCustomer
 from app.models.restaurant import Restaurant
 
@@ -57,6 +57,7 @@ async def delete_my_data(
 @router.get("/orders/{order_id}")
 async def get_order(
     order_id: uuid.UUID,
+    session: dict = Depends(get_table_session),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -132,7 +133,7 @@ async def get_order(
 
 @router.get("/session/orders")
 async def get_session_orders(
-    table_id: str = None,
+    session: dict = Depends(get_table_session),
     order_ids: str = None,
     db: AsyncSession = Depends(get_db)
 ):
@@ -146,8 +147,8 @@ async def get_session_orders(
     if order_ids:
         oid_list = [uuid.UUID(oid.strip()) for oid in order_ids.split(",") if oid.strip()]
         query = query.where(Order.id.in_(oid_list))
-    elif table_id:
-        query = query.where(Order.table_id == uuid.UUID(table_id))
+    elif session.get("table_id"):
+        query = query.where(Order.table_id == uuid.UUID(session["table_id"]))
     else:
         return {"data": [], "success": True, "message": "No session criteria"}
 
@@ -190,7 +191,7 @@ async def get_session_orders(
 
 @router.get("/session/bill")
 async def get_session_bill(
-    table_id: str = None,
+    session: dict = Depends(get_table_session),
     order_ids: str = None,
     db: AsyncSession = Depends(get_db)
 ):
@@ -204,8 +205,8 @@ async def get_session_bill(
     if order_ids:
         oid_list = [uuid.UUID(oid.strip()) for oid in order_ids.split(",") if oid.strip()]
         query = query.where(Order.id.in_(oid_list))
-    elif table_id:
-        query = query.where(Order.table_id == uuid.UUID(table_id))
+    elif session.get("table_id"):
+        query = query.where(Order.table_id == uuid.UUID(session["table_id"]))
     else:
         raise HTTPException(status_code=400, detail="Must provide table_id or order_ids")
 

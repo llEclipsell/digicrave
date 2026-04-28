@@ -7,6 +7,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
+import { useSessionStore } from "@/store/sessionStore";
 
 // ── Dev-mode restaurant ID (confirmed from DB) ──────────────────────
 export const RESTAURANT_ID = "099e3454-e48c-42d9-9098-d554e7d9ccd2";
@@ -18,6 +19,9 @@ function getRestaurantId(): string {
   if (typeof window === "undefined") {
     return process.env.NEXT_PUBLIC_RESTAURANT_ID ?? RESTAURANT_ID;
   }
+  const sessionState = useSessionStore.getState();
+  if (sessionState.restaurantId) return sessionState.restaurantId;
+  
   const params = new URLSearchParams(window.location.search);
   return (
     params.get("rid") ??
@@ -29,6 +33,10 @@ function getRestaurantId(): string {
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
+  // Use table session token first for customer routes
+  const sessionToken = useSessionStore.getState().sessionToken;
+  if (sessionToken) return sessionToken;
+  // Fallback to staff token
   return localStorage.getItem("dc_access_token");
 }
 
@@ -63,13 +71,8 @@ api.interceptors.request.use(
     const rid = getRestaurantId();
     if (rid) config.headers["X-Restaurant-ID"] = rid;
 
-    // Also append it as a query parameter for every GET request
-    if (config.method?.toLowerCase() === "get" && rid) {
-      config.params = config.params || {};
-      if (!config.params.restaurant_id) {
-        config.params.restaurant_id = rid;
-      }
-    }
+    // Remove query params logic for restaurant_id
+    // It's handled securely via session token now
 
     const token = getToken();
     if (token) config.headers["Authorization"] = `Bearer ${token}`;

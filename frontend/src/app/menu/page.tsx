@@ -3,7 +3,7 @@
 // Phase 2 — Customer QR Menu (mobile-first)
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Search, X, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,23 +15,44 @@ import { UpsellDialog } from "@/components/menu/UpsellDialog";
 import { useCategories, useMenuItems } from "@/hooks/useMenu";
 import { useCartStore } from "@/store/cartStore";
 import { MenuItem } from "@/types";
+import { useSessionStore } from "@/store/sessionStore";
+import api from "@/lib/axios";
 import { cn } from "@/lib/utils";
 
 export default function MenuPage() {
   const searchParams = useSearchParams();
-  const tableId = searchParams.get("table");
-  const restaurantId =
-    searchParams.get("rid") ??
-    process.env.NEXT_PUBLIC_RESTAURANT_ID ??
-    "";
-
-  const initSession = useCartStore((s) => s.initSession);
+  const router = useRouter();
+  
+  const initCartSession = useCartStore((s) => s.initSession);
+  const { isVerified, setSession, tableNumber, restaurantId } = useSessionStore();
+  
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState(false);
 
   useEffect(() => {
-    initSession(restaurantId, tableId);
-    if (restaurantId)
-      localStorage.setItem("dc_restaurant_id", restaurantId);
-  }, [restaurantId, tableId, initSession]);
+    const qrToken = searchParams.get("qr");
+    
+    if (qrToken) {
+      setVerifying(true);
+      api.get(`/api/v1/qr/verify?token=${qrToken}`)
+        .then((res) => {
+          const { restaurant_id, table_number, session_token } = res.data;
+          setSession(session_token, restaurant_id, table_number);
+          initCartSession(restaurant_id, String(table_number));
+          // Clean the URL
+          router.replace("/menu");
+        })
+        .catch((err) => {
+          console.error("QR Verification failed", err);
+          setVerifyError(true);
+        })
+        .finally(() => {
+          setVerifying(false);
+        });
+    } else if (!isVerified) {
+      // No token, and not verified -> wait for scan
+    }
+  }, [searchParams, router, setSession, initCartSession, isVerified]);
 
   const { data: categories = [], isLoading: catsLoading } = useCategories();
   const [activeCatId, setActiveCatId] = useState<string>("");
@@ -62,6 +83,27 @@ export default function MenuPage() {
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  if (verifying) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <p className="mt-4 text-muted-foreground">Verifying table session...</p>
+      </div>
+    );
+  }
+
+  if (verifyError || !isVerified) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
+        <p className="text-6xl mb-4">📱</p>
+        <h1 className="text-2xl font-bold tracking-tight mb-2">Invalid or Expired QR Code</h1>
+        <p className="text-muted-foreground">
+          Please scan the QR code on your table again to access the menu.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen bg-background pb-28">
       {/* ── Header ── */}
@@ -69,8 +111,8 @@ export default function MenuPage() {
         <div className="flex items-center justify-between px-4 py-3">
           <div>
             <h1 className="text-lg font-bold tracking-tight">Menu</h1>
-            {tableId && (
-              <p className="text-xs text-muted-foreground">Table {tableId}</p>
+            {tableNumber && (
+              <p className="text-xs text-muted-foreground">Table {tableNumber}</p>
             )}
           </div>
           {/* Aggregator badge — placeholder per blueprint */}

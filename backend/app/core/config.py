@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     MSG91_AUTH_KEY: str = ""
     PLATFORM_FEE: float = 3.00
     GATEWAY_FEE_PERCENT: float = 0.02
+    QR_SECRET_KEY: str = "your-super-secret-qr-key-change-in-production"
 
     class Config:
         env_file = ".env"

@@ -64,3 +64,41 @@ def decode_refresh_token(token: str) -> dict:
         return payload
     except JWTError:
         return None
+
+# --- QR Tokens (24hrs) ---
+def create_qr_token(restaurant_id: str, table_number: int) -> str:
+    to_encode = {
+        "restaurant_id": str(restaurant_id),
+        "table_number": table_number,
+        "type": "qr",
+        "exp": datetime.utcnow() + timedelta(hours=24)
+    }
+    return jwt.encode(to_encode, settings.QR_SECRET_KEY, algorithm=settings.ALGORITHM)
+
+def decode_qr_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, settings.QR_SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get("type") != "qr":
+            return None
+        return payload
+    except JWTError:
+        return None
+
+# --- Session Tokens (2hrs) ---
+def create_session_token(restaurant_id: str, table_number: int) -> str:
+    to_encode = {
+        "restaurant_id": str(restaurant_id),
+        "table_number": table_number,
+        "type": "session",
+        "exp": datetime.utcnow() + timedelta(hours=2)
+    }
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+def decode_session_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get("type") != "session":
+            return None
+        return payload
+    except JWTError:
+        return None

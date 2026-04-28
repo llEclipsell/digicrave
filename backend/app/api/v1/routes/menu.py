@@ -5,7 +5,7 @@ from typing import List
 import uuid
 
 from app.core.database import get_db
-from app.api.v1.dependencies import get_valid_restaurant
+from app.api.v1.dependencies import get_valid_restaurant, get_table_restaurant
 from app.models.menu import MenuItem, Category, ItemCrossSell
 from app.models.restaurant import Restaurant
 from pydantic import BaseModel
@@ -57,7 +57,7 @@ class MenuResponse(BaseModel):
 @router.get("/menu/item/{item_id}", response_model=MenuItemDetailResponse)
 async def get_menu_item(
     item_id: uuid.UUID,
-    restaurant: Restaurant = Depends(get_valid_restaurant),
+    restaurant: Restaurant = Depends(get_table_restaurant),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -104,7 +104,7 @@ async def get_menu_item(
 # ─── New: List categories for X-Restaurant-ID ──────────────────────
 @router.get("/menu/categories")
 async def list_categories(
-    restaurant: Restaurant = Depends(get_valid_restaurant),
+    restaurant: Restaurant = Depends(get_table_restaurant),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -126,7 +126,7 @@ async def list_categories(
 async def list_menu_items(
     category_id: Optional[str] = None,
     limit: int = 100,
-    restaurant: Restaurant = Depends(get_valid_restaurant),
+    restaurant: Restaurant = Depends(get_table_restaurant),
     db: AsyncSession = Depends(get_db),
 ):
     import uuid as _uuid

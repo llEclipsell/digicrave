@@ -5,7 +5,8 @@ import uuid
 from app.core.config import settings
 from app.core.database import get_db
 from app.api.v1.dependencies import (
-    get_valid_restaurant, get_current_customer, get_current_customer_optional
+    get_valid_restaurant, get_current_customer, get_current_customer_optional,
+    get_table_restaurant, get_table_session
 )
 from app.models.restaurant import Restaurant
 from app.models.order import Order
@@ -25,32 +26,18 @@ router = APIRouter()
 async def create_order(
     request: CreateOrderRequest,
     x_idempotency_key: str = Header(..., alias="X-Idempotency-Key"),
-    restaurant: Restaurant = Depends(get_valid_restaurant),
+    restaurant: Restaurant = Depends(get_table_restaurant),
+    session: dict = Depends(get_table_session),
     token_data: dict | None = Depends(get_current_customer_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Blueprint Module 2: POST /order/create
-    Requires: X-Restaurant-ID + X-Idempotency-Key. Customer JWT is optional for guests.
+    Requires: session_token + X-Idempotency-Key. Customer JWT is optional for guests.
     """
     customer_id = uuid.UUID(token_data["sub"]) if token_data else None
     
-    final_table_id = None
-    if request.table_id:
-        try:
-            final_table_id = uuid.UUID(request.table_id)
-        except ValueError:
-            # It's a table number string like "1"
-            from app.models.restaurant import Table
-            table_result = await db.execute(
-                select(Table).where(
-                    Table.restaurant_id == restaurant.id,
-                    Table.table_number == str(request.table_id)
-                )
-            )
-            table_obj = table_result.scalar_one_or_none()
-            if table_obj:
-                final_table_id = table_obj.id
+    final_table_id = uuid.UUID(session["table_id"]) if session.get("table_id") else None
 
     result = await payment_service.create_order(
         restaurant_id=restaurant.id,

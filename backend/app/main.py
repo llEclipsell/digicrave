@@ -8,7 +8,7 @@ from app.core.database import get_db
 from app.api.v1.routes import (
     pricing, auth, payment,
     menu, staff, admin, customer,
-    websocket
+    websocket, qr
 )
 from app.services.sla_monitor import start_sla_monitor
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,6 +54,7 @@ app.include_router(staff.router, prefix="/api/v1", tags=["Staff & Kitchen"])
 app.include_router(admin.router, prefix="/api/v1", tags=["Admin"])
 app.include_router(customer.router, prefix="/api/v1", tags=["Customer"])
 app.include_router(websocket.router, prefix="/api/v1", tags=["WebSockets"])
+app.include_router(qr.router, prefix="/api/v1", tags=["QR"])
 
 
 @app.get("/api/v1/health")
