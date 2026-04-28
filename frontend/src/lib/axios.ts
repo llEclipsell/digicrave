@@ -8,19 +8,22 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 
+// ── Dev-mode restaurant ID (confirmed from DB) ──────────────────────
+export const RESTAURANT_ID = "099e3454-e48c-42d9-9098-d554e7d9ccd2";
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 function getRestaurantId(): string {
   if (typeof window === "undefined") {
-    return process.env.NEXT_PUBLIC_RESTAURANT_ID ?? "";
+    return process.env.NEXT_PUBLIC_RESTAURANT_ID ?? RESTAURANT_ID;
   }
   const params = new URLSearchParams(window.location.search);
   return (
     params.get("rid") ??
     localStorage.getItem("dc_restaurant_id") ??
     process.env.NEXT_PUBLIC_RESTAURANT_ID ??
-    ""
+    RESTAURANT_ID
   );
 }
 
@@ -37,6 +40,15 @@ function clearToken() {
   localStorage.removeItem("dc_access_token");
 }
 
+// ── Seed the restaurant ID into localStorage & sessionStorage on first load ──────────
+if (typeof window !== "undefined") {
+  const stored = localStorage.getItem("dc_restaurant_id");
+  if (!stored || stored === "test-bistro") {
+    localStorage.setItem("dc_restaurant_id", RESTAURANT_ID);
+  }
+  sessionStorage.setItem("dc_restaurant_id", RESTAURANT_ID);
+}
+
 // ── Create instance ───────────────────────────────────────────────────
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -47,8 +59,17 @@ export const api = axios.create({
 // ── Request interceptor ───────────────────────────────────────────────
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Always attach X-Restaurant-ID header (the backend's multi-tenant key)
     const rid = getRestaurantId();
     if (rid) config.headers["X-Restaurant-ID"] = rid;
+
+    // Also append it as a query parameter for every GET request
+    if (config.method?.toLowerCase() === "get" && rid) {
+      config.params = config.params || {};
+      if (!config.params.restaurant_id) {
+        config.params.restaurant_id = rid;
+      }
+    }
 
     const token = getToken();
     if (token) config.headers["Authorization"] = `Bearer ${token}`;
@@ -106,7 +127,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         clearToken();
-        if (typeof window !== "undefined") window.location.href = "/login";
+        // Don't redirect — guest flow doesn't require login
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

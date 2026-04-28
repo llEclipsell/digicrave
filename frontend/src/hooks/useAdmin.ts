@@ -2,16 +2,12 @@
 // Phase 6 — Admin dashboard data
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/axios";
+import { api, RESTAURANT_ID } from "@/lib/axios";
 import { queryKeys } from "@/lib/queryClient";
 import { RevenueStats, WhatsAppWallet, WhatsAppCampaign, ApiResponse } from "@/types";
 import { toast } from "sonner";
 
-const RID =
-  typeof window !== "undefined"
-    ? (localStorage.getItem("dc_restaurant_id") ??
-      process.env.NEXT_PUBLIC_RESTAURANT_ID ?? "")
-    : (process.env.NEXT_PUBLIC_RESTAURANT_ID ?? "");
+const RID = RESTAURANT_ID;
 
 export function useRevenueStats(period: "week" | "month" | "year" = "month") {
   return useQuery({

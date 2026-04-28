@@ -2,20 +2,14 @@
 // Phase 3 — menu data via TanStack Query + Axios
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/axios";
+import { api, RESTAURANT_ID } from "@/lib/axios";
 import { queryKeys } from "@/lib/queryClient";
 import { Category, MenuItem, ApiResponse, PaginatedResponse } from "@/types";
 import { toast } from "sonner";
 
-const RESTAURANT_ID =
-  typeof window !== "undefined"
-    ? new URLSearchParams(window.location.search).get("rid") ??
-      localStorage.getItem("dc_restaurant_id") ??
-      process.env.NEXT_PUBLIC_RESTAURANT_ID ??
-      ""
-    : process.env.NEXT_PUBLIC_RESTAURANT_ID ?? "";
-
 // ── Categories ────────────────────────────────────────────────────────
+// Backend: GET /api/v1/menu/categories
+// Requires: X-Restaurant-ID header (sent by axios interceptor)
 export function useCategories() {
   return useQuery({
     queryKey: queryKeys.menu.categories(RESTAURANT_ID),
@@ -30,13 +24,18 @@ export function useCategories() {
 }
 
 // ── Menu Items ────────────────────────────────────────────────────────
+// Backend: GET /api/v1/menu/items?category_id=...&limit=100
+// Requires: X-Restaurant-ID header (sent by axios interceptor)
 export function useMenuItems(categoryId?: string) {
   return useQuery({
     queryKey: queryKeys.menu.items(RESTAURANT_ID, categoryId),
     queryFn: async () => {
-      const params = categoryId ? `?category_id=${categoryId}` : "";
+      // Build query params properly — always start with ?
+      const params = new URLSearchParams();
+      if (categoryId) params.set("category_id", categoryId);
+      params.set("limit", "100");
       const { data } = await api.get<ApiResponse<PaginatedResponse<MenuItem>>>(
-        `/api/v1/menu/items${params}&limit=100`
+        `/api/v1/menu/items?${params.toString()}`
       );
       return data.data.items;
     },
@@ -45,6 +44,8 @@ export function useMenuItems(categoryId?: string) {
 }
 
 // ── Toggle item availability (admin) ─────────────────────────────────
+// Backend: PATCH /api/v1/menu/items/{item_id}
+// Requires: X-Restaurant-ID header
 export function useToggleItemAvailability() {
   const qc = useQueryClient();
   return useMutation({
@@ -72,6 +73,7 @@ export function useToggleItemAvailability() {
 }
 
 // ── Menu by Slug (matches backend GET /api/v1/menu/{slug}) ───────────
+// This is the customer-facing anonymous endpoint — no auth, no X-Restaurant-ID needed
 interface MenuBySlugCategory {
   id: string;
   name: string;

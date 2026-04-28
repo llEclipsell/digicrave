@@ -1,11 +1,9 @@
 "use client";
 // src/components/menu/MenuItemCard.tsx
-// Phase 2 — mobile-first item card
+// MenEW Stitch Design — menu item card
 
 import { useState } from "react";
-import { Plus, Minus, Leaf, Star, Zap } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Plus, Minus, Star, Zap } from "lucide-react";
 import { MenuItem, getDigitalBasePrice } from "@/types";
 import { useCartStore } from "@/store/cartStore";
 import { cn } from "@/lib/utils";
@@ -28,34 +26,27 @@ export function MenuItemCard({ item, onUpsellTrigger }: MenuItemCardProps) {
 
   function handleAdd() {
     addItem(item);
-    // AOV upsell: if item has cross-sells, trigger parent callback
     if (item.crossSells.length > 0 && qty === 0) {
       onUpsellTrigger?.(item.crossSells);
     }
   }
 
-  const dietColors: Record<string, string> = {
-    veg: "text-green-600",
-    non_veg: "text-red-500",
-    vegan: "text-emerald-600",
-  };
-
-  const dietLabels: Record<string, string> = {
-    veg: "Veg",
-    non_veg: "Non-Veg",
-    vegan: "Vegan",
-  };
+  const isVeg = item.dietType === "veg" || item.dietType === "vegan";
 
   return (
     <div
       className={cn(
-        "group flex gap-3 rounded-xl border bg-card p-3 transition-all",
-        !item.isAvailable && "opacity-50",
-        qty > 0 && "border-orange-300 bg-orange-50/40 dark:border-orange-800 dark:bg-orange-950/20"
+        "flex gap-3 rounded-xl bg-white border transition-all touch-manipulation",
+        !item.isAvailable && "opacity-60",
+        qty > 0
+          ? "border-[#FF5757] shadow-sm"
+          : "border-[#E8E8E8] shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
       )}
+      style={{ padding: "12px" }}
     >
       {/* Image */}
-      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
+      <div className="relative shrink-0 overflow-hidden rounded-lg bg-[#F3F3F3]"
+           style={{ width: 88, height: 88 }}>
         {item.imageUrl && !imgError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -65,110 +56,110 @@ export function MenuItemCard({ item, onUpsellTrigger }: MenuItemCardProps) {
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-2xl">🍽️</div>
+          <div className="flex h-full w-full items-center justify-center text-3xl">🍽️</div>
         )}
         {item.isPopular && (
-          <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded bg-amber-500 px-1 py-0.5 text-[9px] font-bold text-white">
+          <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded-md px-1 py-0.5 text-[9px] font-bold text-white"
+               style={{ background: "#FFB800" }}>
             <Star className="h-2 w-2 fill-current" />
             HOT
           </div>
         )}
         {!item.isAvailable && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg"
+               style={{ background: "rgba(0,0,0,0.55)" }}>
             <span className="text-xs font-semibold text-white">Sold Out</span>
           </div>
         )}
       </div>
 
-      {/* Details */}
+      {/* Content */}
       <div className="flex flex-1 flex-col gap-1 min-w-0">
-        {/* Diet indicator + name */}
-        <div className="flex items-start justify-between gap-1">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <Leaf className={cn("h-3 w-3 shrink-0", dietColors[item.dietType])} />
-              <span className={cn("text-[10px] font-semibold uppercase tracking-wide", dietColors[item.dietType])}>
-                {dietLabels[item.dietType]}
-              </span>
-            </div>
-            <h3 className="text-sm font-semibold leading-tight text-foreground line-clamp-2">
-              {item.name}
-            </h3>
+        {/* Diet indicator */}
+        <div className="flex items-center gap-1">
+          <div
+            className="h-3.5 w-3.5 rounded-sm border-2 flex items-center justify-center shrink-0"
+            style={{
+              borderColor: isVeg ? "#2E7D32" : "#B6212A",
+            }}
+          >
+            <div
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: isVeg ? "#2E7D32" : "#B6212A" }}
+            />
           </div>
+          <span className="text-[10px] font-semibold uppercase tracking-wide"
+                style={{ color: isVeg ? "#2E7D32" : "#B6212A" }}>
+            {item.dietType === "veg" ? "Veg" : item.dietType === "vegan" ? "Vegan" : "Non-Veg"}
+          </span>
         </div>
 
+        {/* Name */}
+        <h3 className="text-sm font-bold leading-tight line-clamp-2"
+            style={{ color: "var(--brand-text)" }}>
+          {item.name}
+        </h3>
+
         {/* Description */}
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-xs leading-relaxed line-clamp-2"
+           style={{ color: "var(--brand-text-muted)" }}>
           {item.description}
         </p>
 
-        {/* Tags */}
-        {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {item.tags.slice(0, 2).map((tag) => (
-              <Badge key={tag} variant="secondary" className="h-4 px-1.5 text-[9px]">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Pricing + Qty */}
-        <div className="mt-auto flex items-center justify-between">
+        {/* Price + Qty controls */}
+        <div className="mt-auto flex items-center justify-between pt-1">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-bold text-foreground">
+              <span className="text-base font-bold" style={{ color: "var(--brand-text)" }}>
                 ₹{digitalPrice.toFixed(0)}
               </span>
               {saving > 0 && (
-                <span className="text-xs text-muted-foreground line-through">
+                <span className="text-xs line-through" style={{ color: "var(--brand-text-muted)" }}>
                   ₹{item.priceOffline}
                 </span>
               )}
             </div>
             {saving > 0 && (
               <div className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-orange-500" />
-                <span className="text-[10px] font-medium text-orange-600">
+                <Zap className="h-3 w-3" style={{ color: "#FF5757" }} />
+                <span className="text-[10px] font-semibold" style={{ color: "#FF5757" }}>
                   Save ₹{saving.toFixed(0)}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Add / Qty controls */}
+          {/* Add / Quantity stepper */}
           {item.isAvailable && (
-            <div className="flex items-center gap-0">
+            <div>
               {qty === 0 ? (
-                <Button
-                  size="sm"
+                <button
                   onClick={handleAdd}
-                  className="h-8 rounded-lg bg-orange-500 px-4 text-xs font-bold text-white hover:bg-orange-600 active:scale-95 transition-transform"
+                  className="flex items-center gap-1 rounded-lg px-4 py-1.5 text-sm font-bold text-white active:scale-95 transition-transform touch-manipulation"
+                  style={{ background: "#FF5757" }}
                 >
-                  <Plus className="mr-1 h-3 w-3" />
+                  <Plus className="h-3.5 w-3.5" />
                   ADD
-                </Button>
+                </button>
               ) : (
-                <div className="flex items-center gap-1 rounded-lg border border-orange-300 bg-orange-50 dark:bg-orange-950/40 p-0.5">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 rounded-md text-orange-600 hover:bg-orange-100"
+                <div className="flex items-center gap-0.5 rounded-lg p-0.5"
+                     style={{ border: "1.5px solid #FF5757", background: "#FFF5F5" }}>
+                  <button
+                    className="flex h-7 w-7 items-center justify-center rounded-md active:bg-red-100 transition-colors touch-manipulation"
                     onClick={() => removeItem(item.id)}
                   >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="min-w-[20px] text-center text-sm font-bold text-orange-600">
+                    <Minus className="h-3.5 w-3.5" style={{ color: "#B6212A" }} />
+                  </button>
+                  <span className="min-w-[22px] text-center text-sm font-bold"
+                        style={{ color: "#B6212A" }}>
                     {qty}
                   </span>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 rounded-md text-orange-600 hover:bg-orange-100"
+                  <button
+                    className="flex h-7 w-7 items-center justify-center rounded-md active:bg-red-100 transition-colors touch-manipulation"
                     onClick={handleAdd}
                   >
-                    <Plus className="h-3 w-3" />
-                  </Button>
+                    <Plus className="h-3.5 w-3.5" style={{ color: "#B6212A" }} />
+                  </button>
                 </div>
               )}
             </div>

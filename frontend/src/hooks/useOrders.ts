@@ -2,7 +2,7 @@
 // Phase 3 — order fetching + mutations via TanStack Query
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/axios";
+import { api, RESTAURANT_ID } from "@/lib/axios";
 import { queryKeys } from "@/lib/queryClient";
 import {
   Order,
@@ -13,13 +13,7 @@ import {
 } from "@/types";
 import { toast } from "sonner";
 
-const RID =
-  typeof window !== "undefined"
-    ? (new URLSearchParams(window.location.search).get("rid") ??
-      localStorage.getItem("dc_restaurant_id") ??
-      process.env.NEXT_PUBLIC_RESTAURANT_ID ??
-      "")
-    : (process.env.NEXT_PUBLIC_RESTAURANT_ID ?? "");
+const RID = RESTAURANT_ID;
 
 // ── Live order queue (KDS / POS) ─────────────────────────────────────
 export function useLiveOrders() {

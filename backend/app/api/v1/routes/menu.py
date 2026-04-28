@@ -52,51 +52,6 @@ class MenuResponse(BaseModel):
     items: List[MenuItemResponse]
 
 
-# --- Routes ---
-@router.get("/menu/{slug}", response_model=MenuResponse)
-async def get_menu_by_slug(
-    slug: str,
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Blueprint Module 1: GET /menu/{slug}
-    Anonymous access — customers browse before login.
-    Returns all active categories + available items.
-    """
-    # Find restaurant by slug
-    result = await db.execute(
-        select(Restaurant).where(
-            Restaurant.slug == slug,
-            Restaurant.deleted_at == None
-        )
-    )
-    restaurant = result.scalar_one_or_none()
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-
-    # Fetch categories
-    cat_result = await db.execute(
-        select(Category).where(
-            Category.restaurant_id == restaurant.id,
-            Category.deleted_at == None
-        )
-    )
-    categories = cat_result.scalars().all()
-
-    # Fetch available menu items only
-    items_result = await db.execute(
-        select(MenuItem).where(
-            MenuItem.restaurant_id == restaurant.id,
-            MenuItem.is_available == True,
-            MenuItem.deleted_at == None
-        )
-    )
-    items = items_result.scalars().all()
-
-    return MenuResponse(
-        categories=[CategoryResponse.model_validate(c) for c in categories],
-        items=[MenuItemResponse.model_validate(i) for i in items],
-    )
 
 
 @router.get("/menu/item/{item_id}", response_model=MenuItemDetailResponse)
@@ -254,3 +209,49 @@ async def patch_menu_item(
 
     await db.commit()
     return {"data": {"id": str(item_id), "isAvailable": item.is_available}, "success": True, "message": "Item updated"}
+
+# --- Routes ---
+@router.get("/menu/{slug}", response_model=MenuResponse)
+async def get_menu_by_slug(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Blueprint Module 1: GET /menu/{slug}
+    Anonymous access — customers browse before login.
+    Returns all active categories + available items.
+    """
+    # Find restaurant by slug
+    result = await db.execute(
+        select(Restaurant).where(
+            Restaurant.slug == slug,
+            Restaurant.deleted_at == None
+        )
+    )
+    restaurant = result.scalar_one_or_none()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    # Fetch categories
+    cat_result = await db.execute(
+        select(Category).where(
+            Category.restaurant_id == restaurant.id,
+            Category.deleted_at == None
+        )
+    )
+    categories = cat_result.scalars().all()
+
+    # Fetch available menu items only
+    items_result = await db.execute(
+        select(MenuItem).where(
+            MenuItem.restaurant_id == restaurant.id,
+            MenuItem.is_available == True,
+            MenuItem.deleted_at == None
+        )
+    )
+    items = items_result.scalars().all()
+
+    return MenuResponse(
+        categories=[CategoryResponse.model_validate(c) for c in categories],
+        items=[MenuItemResponse.model_validate(i) for i in items],
+    )

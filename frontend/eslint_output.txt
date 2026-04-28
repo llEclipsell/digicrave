@@ -1,0 +1,135 @@
+
+> digicrave@0.1.0 lint
+> eslint
+
+
+C:\Antigravity\digicrave\frontend\src\app\admin\page.tsx
+   55:10  warning  'useConnectionBadge' is defined but never used                   @typescript-eslint/no-unused-vars
+  681:73  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Antigravity\digicrave\frontend\src\app\cart\page.tsx
+   8:21  warning  'CreditCard' is defined but never used                  @typescript-eslint/no-unused-vars
+   8:33  warning  'Banknote' is defined but never used                    @typescript-eslint/no-unused-vars
+  10:10  warning  'Separator' is defined but never used                   @typescript-eslint/no-unused-vars
+  13:10  warning  'Input' is defined but never used                       @typescript-eslint/no-unused-vars
+  14:10  warning  'Checkbox' is defined but never used                    @typescript-eslint/no-unused-vars
+  16:10  warning  'CartBreakdown' is defined but never used               @typescript-eslint/no-unused-vars
+  18:25  warning  'useCreateRazorpayOrder' is defined but never used      @typescript-eslint/no-unused-vars
+  19:10  warning  'cn' is defined but never used                          @typescript-eslint/no-unused-vars
+  21:6   warning  'CheckoutPath' is defined but never used                @typescript-eslint/no-unused-vars
+  26:9   warning  'breakdown' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  35:10  warning  'customerName' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  35:24  warning  'setCustomerName' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  36:10  warning  'customerPhone' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  36:25  warning  'setCustomerPhone' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  37:10  warning  'marketingOptIn' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  37:26  warning  'setMarketingOptIn' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  38:25  warning  'setPlacedOrderId' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\Antigravity\digicrave\frontend\src\app\menu\[slug]\page.tsx
+   8:21  warning  'Filter' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  72:9   warning  The 'categories' logical expression could make the dependencies of useMemo Hook (at line 80) change on every render. To fix this, wrap the initialization of 'categories' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  72:9   warning  The 'categories' logical expression could make the dependencies of useEffect Hook (at line 93) change on every render. To fix this, wrap the initialization of 'categories' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  73:9   warning  The 'rawItems' logical expression could make the dependencies of useMemo Hook (at line 85) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'rawItems' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  91:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Antigravity\digicrave\frontend\src\app\menu\[slug]\page.tsx:91:7
+  89 |   useEffect(() => {
+  90 |     if (categories.length > 0 && !activeCatId) {
+> 91 |       setActiveCatId(categories[0].id);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  92 |     }
+  93 |   }, [categories, activeCatId]);
+  94 |  react-hooks/set-state-in-effect
+
+C:\Antigravity\digicrave\frontend\src\app\menu\page.tsx
+  45:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Antigravity\digicrave\frontend\src\app\menu\page.tsx:45:7
+  43 |   useEffect(() => {
+  44 |     if (categories.length > 0 && !activeCatId) {
+> 45 |       setActiveCatId(categories[0].id);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  46 |     }
+  47 |   }, [categories, activeCatId]);
+  48 |  react-hooks/set-state-in-effect
+
+C:\Antigravity\digicrave\frontend\src\app\order-status\page.tsx
+  10:10  warning  'Order' is defined but never used                         @typescript-eslint/no-unused-vars
+  11:55  warning  'CreditCard' is defined but never used                    @typescript-eslint/no-unused-vars
+  11:67  warning  'Loader2' is defined but never used                       @typescript-eslint/no-unused-vars
+  31:9   warning  'createRazorpayOrder' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  32:10  warning  'isPaying' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  32:20  warning  'setIsPaying' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+C:\Antigravity\digicrave\frontend\src\app\pay-bill\page.tsx
+    9:10  warning  'Label' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   10:52  warning  'CardDescription' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   31:11  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Antigravity\digicrave\frontend\src\app\pay-bill\page.tsx:31:11
+  29 |         const parsed = JSON.parse(stored);
+  30 |         if (Array.isArray(parsed) && parsed.length > 0) {
+> 31 |           setOrderIds(parsed);
+     |           ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |         }
+  33 |       } catch (e) {
+  34 |         console.error("Failed to parse session orders", e);  react-hooks/set-state-in-effect
+   37:6   warning  React Hook useEffect has a missing dependency: 'storageKey'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/exhaustive-deps
+   69:14  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   87:20  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react/no-unescaped-entities
+  198:72  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react/no-unescaped-entities
+
+C:\Antigravity\digicrave\frontend\src\app\staff\pos\page.tsx
+  24:10  warning  'Separator' is defined but never used  @typescript-eslint/no-unused-vars
+  43:10  warning  'MenuItem' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Antigravity\digicrave\frontend\src\app\staff\waiter\page.tsx
+  13:3  warning  'LogOut' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Antigravity\digicrave\frontend\src\components\admin\StatsCards.tsx
+  4:49  warning  'Users' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Antigravity\digicrave\frontend\src\components\menu\OrdersDrawer.tsx
+  104:27  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  139:57  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Antigravity\digicrave\frontend\src\hooks\useOrders.ts
+  108:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  167:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Antigravity\digicrave\frontend\src\hooks\useWebSocket.ts
+  47:3   error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Antigravity\digicrave\frontend\src\hooks\useWebSocket.ts:47:3
+  45 | ) {
+  46 |   const handlerRef = useRef(handler);
+> 47 |   handlerRef.current = handler;
+     |   ^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  48 |
+  49 |   useEffect(() => {
+  50 |     const stable = (e: WSEvent<T>) => handlerRef.current(e);  react-hooks/refs
+  64:14  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+
+✖ 48 problems (12 errors, 36 warnings)
+

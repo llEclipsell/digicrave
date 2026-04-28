@@ -4,186 +4,339 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── @theme inline: maps Tailwind color utilities → CSS vars ───────
-   Keep this block exactly as shadcn generated it.
-   We control the actual values in :root below.
-   ------------------------------------------------------------------ */
+/* ─────────────────────────────────────────────────────────────────────
+   MenEW DigiCrave Design System
+   Extracted from Stitch project "MenEW DigiCrave UI Redesign"
+   Font: Plus Jakarta Sans  •  Roundness: ROUND_EIGHT (8px)
+   Color Variant: FIDELITY  •  Theme: Light
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ── @theme inline: maps CSS vars → Tailwind utility classes ──────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
+  /* Core shadcn/ui tokens */
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-card:               var(--card);
+  --color-card-foreground:    var(--card-foreground);
+  --color-popover:            var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-/* ─── DigiCrave: Dark & Warm palette ────────────────────────────────
-   Deep espresso browns · Aged gold · Premium restaurant feel.
-   This single :root block replaces shadcn's Nova light values.
-   No .dark class needed — the app is always dark.
-   ------------------------------------------------------------------ */
-:root {
-  color-scheme: dark;
-  --radius: 0.625rem;
-
-  /* Surfaces */
-  --background:             oklch(0.13 0.018 60);   /* deep espresso      */
-  --foreground:             oklch(0.93 0.025 75);   /* warm cream         */
-  --card:                   oklch(0.17 0.022 58);   /* lifted dark brown  */
-  --card-foreground:        oklch(0.93 0.025 75);
-  --popover:                oklch(0.17 0.022 58);
-  --popover-foreground:     oklch(0.93 0.025 75);
-
-  /* Primary: aged gold */
-  --primary:                oklch(0.72 0.14 68);
-  --primary-foreground:     oklch(0.13 0.018 60);
-
-  /* Secondary: warm mid-brown */
-  --secondary:              oklch(0.22 0.025 58);
-  --secondary-foreground:   oklch(0.80 0.025 70);
-
-  /* Muted: warm stone */
-  --muted:                  oklch(0.20 0.020 58);
-  --muted-foreground:       oklch(0.55 0.030 65);
-
-  /* Accent: ember orange */
-  --accent:                 oklch(0.62 0.19 45);
-  --accent-foreground:      oklch(0.98 0.005 75);
-
-  /* Destructive */
-  --destructive:            oklch(0.58 0.22 25);
-
-  /* Border / Input / Ring */
-  --border:                 oklch(0.26 0.025 58);
-  --input:                  oklch(0.24 0.023 58);
-  --ring:                   oklch(0.72 0.14 68);
+  --color-primary:            var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary:          var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+  --color-accent:             var(--accent);
+  --color-accent-foreground:  var(--accent-foreground);
+  --color-destructive:        var(--destructive);
+  --color-border:             var(--border);
+  --color-input:              var(--input);
+  --color-ring:               var(--ring);
 
   /* Charts */
-  --chart-1:                oklch(0.72 0.14 68);    /* gold   */
-  --chart-2:                oklch(0.62 0.19 45);    /* ember  */
-  --chart-3:                oklch(0.60 0.15 160);   /* green  */
-  --chart-4:                oklch(0.55 0.15 250);   /* blue   */
-  --chart-5:                oklch(0.65 0.18 330);   /* rose   */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
-  /* Sidebar (staff views) */
-  --sidebar:                oklch(0.15 0.020 58);
-  --sidebar-foreground:     oklch(0.93 0.025 75);
-  --sidebar-primary:        oklch(0.72 0.14 68);
-  --sidebar-primary-foreground: oklch(0.13 0.018 60);
-  --sidebar-accent:         oklch(0.22 0.025 58);
-  --sidebar-accent-foreground:  oklch(0.80 0.025 70);
-  --sidebar-border:         oklch(0.26 0.025 58);
-  --sidebar-ring:           oklch(0.72 0.14 68);
+  /* Sidebar */
+  --color-sidebar:                    var(--sidebar);
+  --color-sidebar-foreground:         var(--sidebar-foreground);
+  --color-sidebar-primary:            var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:             var(--sidebar-accent);
+  --color-sidebar-accent-foreground:  var(--sidebar-accent-foreground);
+  --color-sidebar-border:             var(--sidebar-border);
+  --color-sidebar-ring:               var(--sidebar-ring);
+
+  /* Fonts */
+  --font-sans:    var(--font-plus-jakarta);
+  --font-mono:    var(--font-geist-mono);
+  --font-heading: var(--font-plus-jakarta);
+
+  /* Radii — computed from base --radius */
+  --radius-sm:   calc(var(--radius) * 0.5);
+  --radius-md:   calc(var(--radius) * 0.75);
+  --radius-lg:   var(--radius);
+  --radius-xl:   calc(var(--radius) * 1.5);
+  --radius-2xl:  calc(var(--radius) * 2);
+  --radius-full: 9999px;
+
+  /* ── MenEW brand tokens (usable as `bg-brand-primary` etc.) ── */
+  --color-brand-primary:      var(--color-bg-primary-action);
+  --color-brand-secondary:    var(--color-secondary-accent);
+  --color-brand-surface:      var(--color-bg-primary);
+  --color-brand-surface-low:  var(--color-bg-surface);
+  --color-brand-text:         var(--color-text-heading);
+  --color-brand-text-muted:   var(--color-text-muted);
+  --color-brand-border:       var(--color-border-default);
+  --color-brand-success:      var(--color-success);
+  --color-brand-error:        var(--color-error);
 }
 
-/* ─── Base ───────────────────────────────────────────────────────── */
+/* ─── Design Tokens (exact Stitch hex values) ────────────────────── */
+:root {
+  color-scheme: light;
+
+  /* ── Radius ── */
+  --radius: 0.5rem;  /* 8px — ROUND_EIGHT */
+
+  /* ── Semantic Radius Aliases ── */
+  --radius-card:  0.5rem;   /* 8px  — cards */
+  --radius-sheet: 1rem;     /* 16px — bottom sheets */
+  --radius-pill:  9999px;   /* pills & badges */
+
+  /* ── Background Surfaces ── */
+  --color-bg-primary:    #F9F9F9;  /* page background (surface) */
+  --color-bg-surface:    #F3F3F3;  /* card/section background (surface-container-low) */
+  --color-bg-elevated:   #FFFFFF;  /* elevated cards (surface-container-lowest) */
+  --color-bg-container:  #EEEEEE;  /* surface-container */
+  --color-bg-container-high: #E8E8E8; /* surface-container-high */
+
+  /* ── Brand Colors ── */
+  --color-primary-brand:       #FF5757;  /* primary-container — CTA red */
+  --color-primary-deep:        #B6212A;  /* primary — deep brand red */
+  --color-primary-hover:       #930016;  /* on-primary-fixed-variant — hover */
+  --color-primary-muted:       #FFB3AF;  /* inverse-primary — soft pink */
+  --color-bg-primary-action:   #FF5757;  /* alias for brand-primary */
+
+  --color-secondary-accent:    #FFB800;  /* secondary-container — yellow accent */
+  --color-secondary-deep:      #7C5800;  /* secondary */
+  --color-tertiary:            #9E4224;  /* tertiary — brown-red depth */
+  --color-tertiary-container:  #DF7451;  /* tertiary-container */
+
+  /* ── Text ── */
+  --color-text-heading: #1B1B1B;  /* on-surface — max contrast */
+  --color-text-body:    #1B1B1B;  /* on-surface */
+  --color-text-muted:   #5A403F;  /* on-surface-variant */
+  --color-text-on-primary: #FFFFFF; /* on-primary */
+
+  /* ── Borders & Outlines ── */
+  --color-border-default: #E3BEBB; /* outline-variant */
+  --color-border-subtle:  #E8E8E8; /* surface-container-high */
+  --color-outline:        #8E706E; /* outline */
+
+  /* ── Status Colors ── */
+  --color-success: #2E7D32;   /* green — ready/paid */
+  --color-warning: #FFB800;   /* yellow — in-progress */
+  --color-error:   #BA1A1A;   /* red — error/cancelled */
+
+  /* ── Spacing Scale (4px base) ── */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-gutter: 12px;
+  --space-container-margin: 16px;
+
+  /* ── shadcn/ui token mapping → MenEW palette ── */
+  --background:           #F9F9F9;
+  --foreground:           #1B1B1B;
+  --card:                 #FFFFFF;
+  --card-foreground:      #1B1B1B;
+  --popover:              #FFFFFF;
+  --popover-foreground:   #1B1B1B;
+
+  --primary:              #B6212A;
+  --primary-foreground:   #FFFFFF;
+
+  --secondary:            #EEEEEE;
+  --secondary-foreground: #1B1B1B;
+
+  --muted:                #EEEEEE;
+  --muted-foreground:     #5A403F;
+
+  --accent:               #FF5757;
+  --accent-foreground:    #FFFFFF;
+
+  --destructive:          #BA1A1A;
+
+  --border:               #E3BEBB;
+  --input:                #E8E8E8;
+  --ring:                 #B6212A;
+
+  /* Charts */
+  --chart-1: #B6212A;
+  --chart-2: #FFB800;
+  --chart-3: #9E4224;
+  --chart-4: #5A403F;
+  --chart-5: #2E7D32;
+
+  /* Sidebar (staff dashboards — dark) */
+  --sidebar:                     #1B1B1B;
+  --sidebar-foreground:          #F9F9F9;
+  --sidebar-primary:             #FF5757;
+  --sidebar-primary-foreground:  #FFFFFF;
+  --sidebar-accent:              #2C2C2D;
+  --sidebar-accent-foreground:   #F9F9F9;
+  --sidebar-border:              #3A3A3B;
+  --sidebar-ring:                #FF5757;
+}
+
+/* ─── Base Layer ─────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
     overflow-x: hidden;
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Subtle warm radial glow at top */
-    background-image: radial-gradient(
-      ellipse 80% 50% at 50% 0%,
-      oklch(0.20 0.030 58 / 0.5) 0%,
-      transparent 70%
-    );
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   html {
-    @apply font-sans;
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
   }
-  h1, h2, h3 { letter-spacing: -0.02em; }
+
+  /* MenEW Typography scale — Plus Jakarta Sans */
+  h1 { font-size: 2rem;     font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+  h2 { font-size: 1.5rem;   font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; }
+  h3 { font-size: 1.25rem;  font-weight: 600; line-height: 1.4; letter-spacing: 0; }
+  h4 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; letter-spacing: 0; }
 
   ::selection {
-    background: oklch(0.72 0.14 68 / 0.30);
-    color: var(--foreground);
+    background: #B6212A33;
+    color: #1B1B1B;
   }
 
-  /* Warm gold scrollbar */
-  ::-webkit-scrollbar              { width: 4px; height: 4px; }
+  /* Subtle scrollbar */
+  ::-webkit-scrollbar              { width: 3px; height: 3px; }
   ::-webkit-scrollbar-track        { background: transparent; }
-  ::-webkit-scrollbar-thumb        { border-radius: 9999px; background: oklch(0.72 0.14 68 / 0.30); }
-  ::-webkit-scrollbar-thumb:hover  { background: oklch(0.72 0.14 68 / 0.55); }
+  ::-webkit-scrollbar-thumb        { border-radius: 9999px; background: #E3BEBB; }
+  ::-webkit-scrollbar-thumb:hover  { background: #B6212A66; }
 }
 
 /* ─── Utilities ──────────────────────────────────────────────────── */
 @layer utilities {
+  /* Safe area insets for mobile notch/home bar */
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
   .pt-safe { padding-top:    env(safe-area-inset-top, 0px);     }
+
+  /* Hide scrollbar but keep scroll */
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Touch optimization */
   .touch-manipulation { touch-action: manipulation; }
+
+  /* MenEW brand button — primary CTA (bright red) */
+  .btn-brand-primary {
+    background: var(--color-primary-brand);
+    color: var(--color-text-on-primary);
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    height: 3rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-brand-primary:hover  { background: var(--color-primary-deep); }
+  .btn-brand-primary:active { transform: scale(0.98); }
+  .btn-brand-primary:disabled { opacity: 0.5; pointer-events: none; }
+
+  /* MenEW card style */
+  .card-menew {
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  /* Sticky bottom action bar */
+  .sticky-action-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--color-bg-elevated);
+    border-top: 1px solid var(--color-border-subtle);
+    padding: var(--space-gutter) var(--space-md);
+    padding-bottom: env(safe-area-inset-bottom, 12px);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    z-index: 50;
+  }
+
+  /* Hero banner gradient */
+  .hero-gradient {
+    background: linear-gradient(135deg, var(--color-primary-deep) 0%, var(--color-tertiary) 100%);
+  }
+
+  /* Category pill states */
+  .pill-active {
+    background: var(--color-primary-deep);
+    color: var(--color-text-on-primary);
+    font-weight: 600;
+  }
+  .pill-inactive {
+    background: var(--color-bg-container);
+    color: var(--color-text-muted);
+  }
+
+  /* Stepper line */
+  .stepper-line-done   { background: var(--color-primary-deep); }
+  .stepper-line-pending { background: var(--color-bg-container-high); }
+
+  /* Order status badges */
+  .badge-pending  { background: #FFF3CD; color: #856404; }
+  .badge-paid     { background: #D4EDDA; color: #155724; }
+  .badge-error    { background: #F8D7DA; color: #721C24; }
+
+  /* Animations */
   .float-cart-enter   { animation: slideUpFade 0.25s ease-out forwards; }
   .kds-urgent         { animation: urgentFlash 1s ease-in-out infinite; }
   .kds-column         { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 
-  .text-gold {
-    background: linear-gradient(135deg, oklch(0.76 0.15 70), oklch(0.65 0.13 65));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .success-ring {
+    animation: successPulse 0.6s ease-out;
   }
-  .glow-gold:hover {
-    box-shadow: 0 0 20px oklch(0.72 0.14 68 / 0.25);
+
+  /* Bottom nav tab states */
+  .bottom-nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    transition: color 0.15s ease;
+  }
+  .bottom-nav-tab-active {
+    color: var(--color-primary-brand);
+  }
+  .bottom-nav-tab-inactive {
+    color: var(--color-text-muted);
   }
 }
 
 /* ─── Keyframes ──────────────────────────────────────────────────── */
 @keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0);    }
 }
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1);    }
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1);   }
 }
 @keyframes urgentFlash {
-  0%,100% { border-color: oklch(0.58 0.22 25 / 0.5); }
-  50%     { border-color: oklch(0.58 0.22 25 / 1);   }
+  0%,100% { border-color: rgba(186,26,26,0.4); }
+  50%     { border-color: rgba(186,26,26,1);   }
 }
-@keyframes goldPulse {
-  0%,100% { box-shadow: 0 0  8px oklch(0.72 0.14 68 / 0.25); }
-  50%     { box-shadow: 0 0 22px oklch(0.72 0.14 68 / 0.55); }
+@keyframes successPulse {
+  0%   { box-shadow: 0 0  0   rgba(182,33,42, 0); }
+  50%  { box-shadow: 0 0 30px rgba(182,33,42, 0.35); }
+  100% { box-shadow: 0 0  0   rgba(182,33,42, 0); }
 }
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
+@keyframes checkDraw {
+  from { stroke-dashoffset: 60; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes starPop {
+  0%   { transform: scale(0.6); opacity: 0.5; }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1);   opacity: 1; }
 }
